@@ -19,8 +19,8 @@
 
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
-    <link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="site.css">
+    <link rel="preload" href="fonts/ls-sans.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="site.css?v=2">
     <style>:root { --app: #b5470b; --app-dark: #ff9a5c; }</style>
 
     <script>
@@ -90,29 +90,27 @@
 
 <main id="main">
     <section class="wrap hero" id="top">
-        <div class="hero-copy">
-            <p class="eyebrow">Shutdown timer for <b>Windows 11</b></p>
+        <div class="hero-head">
             <h1>Shut down later. Cancel any time.</h1>
-            <p class="lede">Pwrschdlr, a power scheduler without the vowels, shuts down, restarts, sleeps, hibernates or signs out of your PC when a timer runs out, and warns you first.</p>
-            <div class="actions">
-                <a class="btn btn-primary" href="https://github.com/lukastojiljkovic/Power-Scheduler/releases/latest">Download for Windows</a>
-                <a class="btn" href="https://github.com/lukastojiljkovic/Power-Scheduler">View the source</a>
+            <div class="hero-copy">
+                <p class="lede">Pwrschdlr, a power scheduler without the vowels, shuts down, restarts, sleeps, hibernates or signs out of your PC when a timer runs out, and warns you first.</p>
+                <div class="actions">
+                    <a class="btn btn-primary" href="https://github.com/lukastojiljkovic/Power-Scheduler/releases/latest">Download for Windows</a>
+                    <a class="btn" href="https://github.com/lukastojiljkovic/Power-Scheduler">View the source</a>
+                </div>
+                <p class="fine">Free and open source (MIT). Windows 11, or Windows 10 1809+, x64.</p>
             </div>
-            <p class="fine">Free and open source (MIT) · Windows 11, or Windows 10 1809+ · x64</p>
         </div>
-        <div class="hero-media">
-            <figure class="frame frame-shot">
-                <div class="frame-bar"><span>Pwrschdlr</span><span>timer</span></div>
-                <img class="shot-light" src="images/countdown-light.png" width="926" height="733" alt="Pwrschdlr counting down to a shutdown, with Cancel timer and +15 minutes buttons" fetchpriority="high">
-                <img class="shot-dark" src="images/countdown-dark.png" width="926" height="733" alt="Pwrschdlr counting down to a shutdown, with Cancel timer and +15 minutes buttons">
-            </figure>
-            <dl class="frame readout">
-                <div class="row"><dt>Actions</dt><dd>Shut down, restart, sleep, hibernate, sign out</dd></div>
-                <div class="row"><dt>When</dt><dd>In a while, or at a time</dd></div>
-                <div class="row"><dt>Warning</dt><dd>30 s to 5 min before, on top</dd></div>
-                <div class="row"><dt>Data sent</dt><dd><b>None</b></dd></div>
-            </dl>
+        <div class="desk desk-hero">
+            <img class="win win-light" src="images/countdown-light.png" width="926" height="733" alt="Pwrschdlr counting down to a shutdown, with Cancel timer and +15 minutes buttons" fetchpriority="high">
+            <img class="win win-dark" src="images/countdown-dark.png" width="926" height="733" alt="Pwrschdlr counting down to a shutdown, with Cancel timer and +15 minutes buttons">
         </div>
+        <dl class="readout">
+            <div class="row"><dt>Actions</dt><dd>Shut down, restart, sleep, hibernate, sign out</dd></div>
+            <div class="row"><dt>When</dt><dd>In a while, or at a time</dd></div>
+            <div class="row"><dt>Warning</dt><dd>30 s to 5 min before, on top</dd></div>
+            <div class="row"><dt>Data sent</dt><dd><b>None</b></dd></div>
+        </dl>
     </section>
 
     <section class="wrap section" id="features">
@@ -120,46 +118,44 @@
         <p class="section-lede">Windows can shut down on a timer with <code>shutdown /s /t 5400</code>, if you remember the flags, do the math in seconds and trust a command you can't see counting down. Pwrschdlr does the same in a window you can see, and lets you change your mind.</p>
         <div class="cells">
             <article class="cell">
-                <p class="cell-n">01</p>
                 <h3>Five actions</h3>
                 <p>Shut down, restart, sleep, hibernate or sign out. Actions your PC can't do, such as hibernating when hibernation is off, are grayed out with the reason.</p>
             </article>
             <article class="cell">
-                <p class="cell-n">02</p>
                 <h3>In a while, or at a time</h3>
                 <p>Set how long to wait, with presets from 15 minutes to 4 hours, or pick a time of day. Daylight saving time is handled.</p>
             </article>
             <article class="cell">
-                <p class="cell-n">03</p>
                 <h3>A countdown you can see</h3>
                 <p>A ring empties as the time runs out, and the taskbar shows the time left. Cancel or add 15 minutes at any time.</p>
             </article>
             <article class="cell">
-                <p class="cell-n">04</p>
                 <h3>Close it, keep the timer</h3>
                 <p>The timer keeps running when Pwrschdlr is closed. Nothing runs in the background in the meantime.</p>
             </article>
             <article class="cell">
-                <p class="cell-n">05</p>
                 <h3>A last chance</h3>
                 <p>Before the end, Pwrschdlr opens again and counts down in a warning that stays on top, so you can save your work, cancel or postpone.</p>
             </article>
             <article class="cell">
-                <p class="cell-n">06</p>
                 <h3>Never late</h3>
                 <p>If your PC was off or asleep when the timer ran out, Pwrschdlr tells you and does nothing, instead of shutting down when you come back.</p>
             </article>
         </div>
         <div class="screens">
             <figure>
-                <img class="frame shot-light" src="images/setup-light.png" width="926" height="733" alt="Setting a timer: the five actions, a delay of 1 hour 30 minutes and a summary saying when the PC shuts down" loading="lazy">
-                <img class="frame shot-dark" src="images/setup-dark.png" width="926" height="733" alt="Setting a timer: the five actions, a delay of 1 hour 30 minutes and a summary saying when the PC shuts down" loading="lazy">
-                <figcaption><span>Fig. 1</span>Pick what happens and when. The summary says exactly when.</figcaption>
+                <div class="desk">
+                    <img class="win win-light" src="images/setup-light.png" width="926" height="733" alt="Setting a timer: the five actions, a delay of 1 hour 30 minutes and a summary saying when the PC shuts down" loading="lazy">
+                    <img class="win win-dark" src="images/setup-dark.png" width="926" height="733" alt="Setting a timer: the five actions, a delay of 1 hour 30 minutes and a summary saying when the PC shuts down" loading="lazy">
+                </div>
+                <figcaption>Pick what happens and when. The summary says exactly when.</figcaption>
             </figure>
             <figure>
-                <img class="frame shot-light" src="images/warning-light.png" width="926" height="733" alt="The warning before a restart, counting down with Restart now, +15 minutes and Cancel buttons" loading="lazy">
-                <img class="frame shot-dark" src="images/warning-dark.png" width="926" height="733" alt="The warning before a restart, counting down with Restart now, +15 minutes and Cancel buttons" loading="lazy">
-                <figcaption><span>Fig. 2</span>The warning counts down on top of everything, with Cancel as the default.</figcaption>
+                <div class="desk">
+                    <img class="win win-light" src="images/warning-light.png" width="926" height="733" alt="The warning before a restart, counting down with Restart now, +15 minutes and Cancel buttons" loading="lazy">
+                    <img class="win win-dark" src="images/warning-dark.png" width="926" height="733" alt="The warning before a restart, counting down with Restart now, +15 minutes and Cancel buttons" loading="lazy">
+                </div>
+                <figcaption>The warning counts down on top of everything, with Cancel as the default.</figcaption>
             </figure>
         </div>
     </section>
