@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pwrschdlr: free shutdown timer for Windows 11</title>
+    <meta name="description" content="Pwrschdlr is a free, open-source shutdown timer for Windows 11. It shuts down, restarts, sleeps, hibernates or signs out of your PC after a delay or at a time, shows the countdown, and warns you before the end so you can cancel.">
+    <meta name="author" content="Luka Stojiljković">
+    <link rel="canonical" href="https://lukastojiljkovic.github.io/Power-Scheduler/">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Pwrschdlr">
+    <meta property="og:title" content="Pwrschdlr: shut down later, cancel any time">
+    <meta property="og:description" content="A power scheduler without the vowels. Shuts down, restarts, sleeps, hibernates or signs out of your PC when a timer runs out, in a native Windows 11 app. Free and open source.">
+    <meta property="og:url" content="https://lukastojiljkovic.github.io/Power-Scheduler/">
+    <meta property="og:image" content="https://lukastojiljkovic.github.io/Power-Scheduler/images/countdown-light.png">
+    <meta property="og:image:alt" content="Pwrschdlr counting down to a shutdown">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="site.css">
+    <style>:root { --app: #b5470b; --app-dark: #ff9a5c; }</style>
+
+    <script>
+        // Theme before first paint: the stored choice (shared with the portfolio), else the system setting.
+        try {
+            const t = localStorage.getItem('theme');
+            document.documentElement.dataset.theme = t === 'dark' || t === 'light' ? t
+                : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        } catch (_) {}
+    </script>
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "SoftwareApplication",
+                "name": "Pwrschdlr",
+                "alternateName": "Power Scheduler",
+                "description": "Windows shutdown timer that shuts down, restarts, sleeps, hibernates or signs out of a PC after a delay or at a time of day. It shows the countdown, keeps running when closed through a scheduled task, and opens a warning before the end so the user can cancel or postpone.",
+                "applicationCategory": "UtilitiesApplication",
+                "operatingSystem": "Windows 11, Windows 10 version 1809 or later",
+                "url": "https://lukastojiljkovic.github.io/Power-Scheduler/",
+                "downloadUrl": "https://github.com/lukastojiljkovic/Power-Scheduler/releases/latest",
+                "screenshot": "https://lukastojiljkovic.github.io/Power-Scheduler/images/countdown-light.png",
+                "license": "https://github.com/lukastojiljkovic/Power-Scheduler/blob/main/LICENSE",
+                "isAccessibleForFree": true,
+                "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+                "author": { "@type": "Person", "name": "Luka Stojiljković", "url": "https://lukastojiljkovic.github.io/CV/" },
+                "sameAs": ["https://github.com/lukastojiljkovic/Power-Scheduler"]
+            },
+            {
+                "@type": "FAQPage",
+                "mainEntity": [
+                    { "@type": "Question", "name": "How do you say Pwrschdlr?", "acceptedAnswer": { "@type": "Answer", "text": "Power scheduler. It's the same name without the vowels." } },
+                    { "@type": "Question", "name": "Is Pwrschdlr free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Pwrschdlr is free and open source under the MIT License. It has no ads, accounts or telemetry." } },
+                    { "@type": "Question", "name": "What happens if I close Pwrschdlr?", "acceptedAnswer": { "@type": "Answer", "text": "The timer keeps running. A scheduled task opens Pwrschdlr again 30 seconds, 1, 2 or 5 minutes before the end, and it counts down in a warning that stays on top, so you can still cancel or postpone." } },
+                    { "@type": "Question", "name": "What if my PC is asleep or off when the timer runs out?", "acceptedAnswer": { "@type": "Answer", "text": "Nothing happens. Pwrschdlr tells you about the missed timer the next time it opens, and never runs it late." } },
+                    { "@type": "Question", "name": "Does Pwrschdlr need administrator rights?", "acceptedAnswer": { "@type": "Answer", "text": "No. Setup installs it for your account only, and the timer's scheduled task runs as you, without administrator rights." } },
+                    { "@type": "Question", "name": "Does Pwrschdlr collect any data?", "acceptedAnswer": { "@type": "Answer", "text": "No. Pwrschdlr doesn't connect to the internet. Its settings and timer stay in your registry." } },
+                    { "@type": "Question", "name": "Why does Windows SmartScreen warn about the installer?", "acceptedAnswer": { "@type": "Answer", "text": "The installer isn't code-signed yet. Check that its SHA-256 hash matches the one in the release notes, then choose More info and Run anyway." } }
+                ]
+            }
+        ]
+    }
+    </script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="bar">
+    <div class="bar-inner">
+        <a class="mark" href="#top"><img src="icon.png" alt="" width="24" height="24">Pwrschdlr</a>
+        <nav class="nav" aria-label="Sections">
+            <a href="#features">Features</a>
+            <a href="#how">How it works</a>
+            <a href="#limits">Limits</a>
+            <a href="#faq">FAQ</a>
+        </nav>
+        <div class="bar-actions">
+            <button class="theme" id="theme" type="button"><span class="theme-light">Dark</span><span class="theme-dark">Light</span></button>
+            <a class="btn btn-small" href="https://github.com/lukastojiljkovic/Power-Scheduler">GitHub</a>
+            <a class="btn btn-small btn-primary" href="#download">Download</a>
+        </div>
+    </div>
+</header>
+
+<main id="main">
+    <section class="wrap hero" id="top">
+        <div class="hero-copy">
+            <p class="eyebrow">Shutdown timer for <b>Windows 11</b></p>
+            <h1>Shut down later. Cancel any time.</h1>
+            <p class="lede">Pwrschdlr, a power scheduler without the vowels, shuts down, restarts, sleeps, hibernates or signs out of your PC when a timer runs out, and warns you first.</p>
+            <div class="actions">
+                <a class="btn btn-primary" href="https://github.com/lukastojiljkovic/Power-Scheduler/releases/latest">Download for Windows</a>
+                <a class="btn" href="https://github.com/lukastojiljkovic/Power-Scheduler">View the source</a>
+            </div>
+            <p class="fine">Free and open source (MIT) · Windows 11, or Windows 10 1809+ · x64</p>
+        </div>
+        <div class="hero-media">
+            <figure class="frame frame-shot">
+                <div class="frame-bar"><span>Pwrschdlr</span><span>timer</span></div>
+                <img class="shot-light" src="images/countdown-light.png" width="926" height="733" alt="Pwrschdlr counting down to a shutdown, with Cancel timer and +15 minutes buttons" fetchpriority="high">
+                <img class="shot-dark" src="images/countdown-dark.png" width="926" height="733" alt="Pwrschdlr counting down to a shutdown, with Cancel timer and +15 minutes buttons">
+            </figure>
+            <dl class="frame readout">
+                <div class="row"><dt>Actions</dt><dd>Shut down, restart, sleep, hibernate, sign out</dd></div>
+                <div class="row"><dt>When</dt><dd>In a while, or at a time</dd></div>
+                <div class="row"><dt>Warning</dt><dd>30 s to 5 min before, on top</dd></div>
+                <div class="row"><dt>Data sent</dt><dd><b>None</b></dd></div>
+            </dl>
+        </div>
+    </section>
+
+    <section class="wrap section" id="features">
+        <h2 class="section-title">What it does</h2>
+        <p class="section-lede">Windows can shut down on a timer with <code>shutdown /s /t 5400</code>, if you remember the flags, do the math in seconds and trust a command you can't see counting down. Pwrschdlr does the same in a window you can see, and lets you change your mind.</p>
+        <div class="cells">
+            <article class="cell">
+                <p class="cell-n">01</p>
+                <h3>Five actions</h3>
+                <p>Shut down, restart, sleep, hibernate or sign out. Actions your PC can't do, such as hibernating when hibernation is off, are grayed out with the reason.</p>
+            </article>
+            <article class="cell">
+                <p class="cell-n">02</p>
+                <h3>In a while, or at a time</h3>
+                <p>Set how long to wait, with presets from 15 minutes to 4 hours, or pick a time of day. Daylight saving time is handled.</p>
+            </article>
+            <article class="cell">
+                <p class="cell-n">03</p>
+                <h3>A countdown you can see</h3>
+                <p>A ring empties as the time runs out, and the taskbar shows the time left. Cancel or add 15 minutes at any time.</p>
+            </article>
+            <article class="cell">
+                <p class="cell-n">04</p>
+                <h3>Close it, keep the timer</h3>
+                <p>The timer keeps running when Pwrschdlr is closed. Nothing runs in the background in the meantime.</p>
+            </article>
+            <article class="cell">
+                <p class="cell-n">05</p>
+                <h3>A last chance</h3>
+                <p>Before the end, Pwrschdlr opens again and counts down in a warning that stays on top, so you can save your work, cancel or postpone.</p>
+            </article>
+            <article class="cell">
+                <p class="cell-n">06</p>
+                <h3>Never late</h3>
+                <p>If your PC was off or asleep when the timer ran out, Pwrschdlr tells you and does nothing, instead of shutting down when you come back.</p>
+            </article>
+        </div>
+        <div class="screens">
+            <figure>
+                <img class="frame shot-light" src="images/setup-light.png" width="926" height="733" alt="Setting a timer: the five actions, a delay of 1 hour 30 minutes and a summary saying when the PC shuts down" loading="lazy">
+                <img class="frame shot-dark" src="images/setup-dark.png" width="926" height="733" alt="Setting a timer: the five actions, a delay of 1 hour 30 minutes and a summary saying when the PC shuts down" loading="lazy">
+                <figcaption><span>Fig. 1</span>Pick what happens and when. The summary says exactly when.</figcaption>
+            </figure>
+            <figure>
+                <img class="frame shot-light" src="images/warning-light.png" width="926" height="733" alt="The warning before a restart, counting down with Restart now, +15 minutes and Cancel buttons" loading="lazy">
+                <img class="frame shot-dark" src="images/warning-dark.png" width="926" height="733" alt="The warning before a restart, counting down with Restart now, +15 minutes and Cancel buttons" loading="lazy">
+                <figcaption><span>Fig. 2</span>The warning counts down on top of everything, with Cancel as the default.</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section class="wrap section" id="how">
+        <h2 class="section-title">How it works</h2>
+        <p class="section-lede">Pwrschdlr keeps the timer in Windows itself, so closing the app, or a crash, doesn't lose it.</p>
+        <ol class="steps">
+            <li><div><h3>A scheduled task, not a background app</h3><p>Starting a timer adds a one-time task to Windows Task Scheduler that opens Pwrschdlr when the warning starts. The task runs as you, without administrator rights, and is removed when the timer ends or you cancel it.</p></div></li>
+            <li><div><h3>One timer</h3><p>The timer is stored in your part of the registry. Starting a new one replaces it, and changing the warning moves the task.</p></div></li>
+            <li><div><h3>Windows does the action</h3><p>Shut down, restart, sign out and hibernate use <code>shutdown.exe</code>. Sleep uses the Windows power API, and on Modern Standby PCs, which have no classic sleep, it turns off the display, which is how those PCs go to sleep.</p></div></li>
+            <li><div><h3>Late is never</h3><p>When the warning ends, Pwrschdlr acts only if the end has just passed. A timer that ran out while the PC was off, asleep or signed out is reported instead.</p></div></li>
+        </ol>
+    </section>
+
+    <section class="wrap section" id="limits">
+        <h2 class="section-title">Tested, and honest about limits</h2>
+        <div class="split">
+            <div>
+                <h3>How it's verified</h3>
+                <ul>
+                    <li><b>55 unit tests</b> cover the timer's phases, postponing, countdowns and times across daylight saving time, the registry storage, the <code>shutdown.exe</code> arguments and a real round trip through Task Scheduler.</li>
+                    <li><b>UI Automation</b> on Windows 11 Pro 26H2 checks setting, cancelling and postponing a timer, the warning, the task opening a closed Pwrschdlr, a missed timer and both themes.</li>
+                    <li><b>CI</b> builds the installer, then installs and uninstalls it silently on every push, checking that nothing is left behind.</li>
+                </ul>
+            </div>
+            <div>
+                <h3>What it can't do</h3>
+                <ul>
+                    <li><b>Run while you're signed out.</b> If you sign out, or your PC is off or asleep when the timer runs out, nothing happens.</li>
+                    <li><b>Overrule Windows.</b> An app with unsaved work or a policy can hold up the action, unless you let Pwrschdlr close apps without asking.</li>
+                    <li><b>Plan days ahead.</b> Timers can be up to 23 hours 59 minutes away.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="wrap section" id="faq">
+        <h2 class="section-title">Questions</h2>
+        <div class="faq">
+            <details><summary>How do you say Pwrschdlr?</summary><p>Power scheduler. It's the same name without the vowels.</p></details>
+            <details><summary>Is Pwrschdlr free?</summary><p>Yes. Pwrschdlr is free and open source under the <a href="https://github.com/lukastojiljkovic/Power-Scheduler/blob/main/LICENSE">MIT License</a>. It has no ads, accounts or telemetry.</p></details>
+            <details><summary>What happens if I close Pwrschdlr?</summary><p>The timer keeps running. A scheduled task opens Pwrschdlr again 30 seconds, 1, 2 or 5 minutes before the end, and it counts down in a warning that stays on top, so you can still cancel or postpone.</p></details>
+            <details><summary>What if my PC is asleep or off when the timer runs out?</summary><p>Nothing happens. Pwrschdlr tells you about the missed timer the next time it opens, and never runs it late.</p></details>
+            <details><summary>Does Pwrschdlr need administrator rights?</summary><p>No. Setup installs it for your account only, and the timer's scheduled task runs as you, without administrator rights.</p></details>
+            <details><summary>Does Pwrschdlr collect any data?</summary><p>No. Pwrschdlr doesn't connect to the internet. Its settings and timer stay in your registry. See the <a href="https://github.com/lukastojiljkovic/Power-Scheduler/blob/main/PRIVACY.md">privacy statement</a>.</p></details>
+            <details><summary>Why does Windows SmartScreen warn about the installer?</summary><p>The installer isn't code-signed yet. Check that its SHA-256 hash matches the one in the <a href="https://github.com/lukastojiljkovic/Power-Scheduler/releases/latest">release notes</a> (<code>Get-FileHash</code> in PowerShell), then choose <b>More info</b> and <b>Run anyway</b>.</p></details>
+        </div>
+    </section>
+
+    <section class="wrap get" id="download">
+        <div class="get-copy">
+            <h2>Get Pwrschdlr</h2>
+            <p class="lede">One installer, no administrator approval, nothing else to install. Pwrschdlr starts from the Start menu and uninstalls from Settings, Apps, removing its settings and timer.</p>
+            <div class="actions">
+                <a class="btn btn-primary" href="https://github.com/lukastojiljkovic/Power-Scheduler/releases/latest">Download the latest release</a>
+                <a class="btn" href="https://github.com/lukastojiljkovic/Power-Scheduler#readme">Read the docs</a>
+            </div>
+        </div>
+        <dl>
+            <div><dt>Requires</dt><dd>Windows 11, or Windows 10 version 1809 or later, x64</dd></div>
+            <div><dt>Installs</dt><dd>For your account, without administrator rights</dd></div>
+            <div><dt>License</dt><dd>MIT, source on GitHub</dd></div>
+            <div><dt>Verify</dt><dd>SHA-256 and build provenance in the release notes</dd></div>
+        </dl>
+    </section>
+</main>
+
+<footer class="wrap">
+    <div class="foot">
+        <span>© 2026 <a href="https://lukastojiljkovic.github.io/CV/">Luka Stojiljković</a></span>
+        <nav aria-label="Legal">
+            <a href="https://github.com/lukastojiljkovic/Power-Scheduler/blob/main/TERMS.md">Terms</a>
+            <a href="https://github.com/lukastojiljkovic/Power-Scheduler/blob/main/PRIVACY.md">Privacy</a>
+            <a href="https://github.com/lukastojiljkovic/Power-Scheduler/blob/main/THIRD-PARTY-NOTICES.md">Third-party notices</a>
+            <a href="https://github.com/lukastojiljkovic/Power-Scheduler/security/policy">Security</a>
+        </nav>
+        <p>Windows is a trademark of the Microsoft group of companies. Pwrschdlr isn't affiliated with or endorsed by Microsoft.</p>
+    </div>
+</footer>
+
+<script>
+    (() => {
+        const root = document.documentElement;
+        const button = document.getElementById('theme');
+        const sync = () => button.setAttribute('aria-label', `Switch to ${root.dataset.theme === 'dark' ? 'light' : 'dark'} theme`);
+        sync();
+        button.addEventListener('click', () => {
+            root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+            try { localStorage.setItem('theme', root.dataset.theme); } catch (_) {}
+            sync();
+        });
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+# Pwrschdlr
+
+> Pwrschdlr ("power scheduler" without the vowels) is a free, open-source (MIT) shutdown timer for Windows 11 by Luka Stojiljković. It shuts down, restarts, sleeps, hibernates or signs out of a PC after a delay or at a time of day, shows the countdown, and opens a warning before the end so the user can cancel or postpone.
+
+Key facts:
+
+- One timer, set for a delay (presets from 15 minutes to 4 hours) or a time of day, up to 23 hours 59 minutes away. Daylight saving time is handled.
+- The timer keeps running when the app is closed: a per-user scheduled task opens Pwrschdlr 30 seconds, 1, 2 or 5 minutes before the end, and the warning stays on top.
+- A timer that ran out while the PC was off, asleep or signed out is reported, never run late.
+- Requires Windows 11, or Windows 10 version 1809 or later, x64. Tested on Windows 11. English UI.
+- Installs for the current user without administrator rights. Collects no data and doesn't connect to the internet.
+- Verified by 55 unit tests, UI Automation on Windows 11 and a silent install and uninstall in CI.
+
+## Download
+
+- [Latest release](https://github.com/lukastojiljkovic/Power-Scheduler/releases/latest): Windows installer, with its SHA-256 hash and build provenance in the release notes
+
+## Documentation
+
+- [README](https://raw.githubusercontent.com/lukastojiljkovic/Power-Scheduler/main/README.md): features, how it works, verification, limitations and building from source
+- [Changelog](https://raw.githubusercontent.com/lukastojiljkovic/Power-Scheduler/main/CHANGELOG.md)
+- [Privacy statement](https://raw.githubusercontent.com/lukastojiljkovic/Power-Scheduler/main/PRIVACY.md)
+- [Terms of use](https://raw.githubusercontent.com/lukastojiljkovic/Power-Scheduler/main/TERMS.md)
+
+## Optional
+
+- [Source code](https://github.com/lukastojiljkovic/Power-Scheduler)
+- [Author's portfolio](https://lukastojiljkovic.github.io/CV/)

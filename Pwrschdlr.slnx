@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Pwrschdlr.Core/Pwrschdlr.Core.csproj" />
+    <Project Path="src/Pwrschdlr/Pwrschdlr.csproj">
+      <Platform Solution="*|Any CPU" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Pwrschdlr.Core.Tests/Pwrschdlr.Core.Tests.csproj" />
+  </Folder>
+</Solution>
