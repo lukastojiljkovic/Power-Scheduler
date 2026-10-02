@@ -19,8 +19,8 @@
 
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
-    <link rel="preload" href="fonts/ls-sans.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="site.css?v=2">
+    <link rel="preload" href="fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="site.css?v=3">
     <style>:root { --app: #b5470b; --app-dark: #ff9a5c; }</style>
 
     <script>
@@ -71,39 +71,45 @@
 <body>
 <a class="skip" href="#main">Skip to content</a>
 
-<header class="bar">
-    <div class="bar-inner">
-        <a class="mark" href="#top"><img src="icon.png" alt="" width="24" height="24">Pwrschdlr</a>
-        <nav class="nav" aria-label="Sections">
-            <a href="#features">Features</a>
-            <a href="#how">How it works</a>
-            <a href="#limits">Limits</a>
-            <a href="#faq">FAQ</a>
-        </nav>
-        <div class="bar-actions">
-            <button class="theme" id="theme" type="button"><span class="theme-light">Dark</span><span class="theme-dark">Light</span></button>
-            <a class="btn btn-small" href="https://github.com/lukastojiljkovic/Power-Scheduler">GitHub</a>
-            <a class="btn btn-small btn-primary" href="#download">Download</a>
+<!-- The title band: what the app does, and the download -->
+<header class="band" id="top">
+    <div class="wrap band-grid">
+        <div class="topline">
+            <a class="mark" href="#top"><img src="icon.png" alt="" width="24" height="24">Pwrschdlr</a>
+            <nav class="nav" aria-label="Sections">
+                <a href="#features">Features</a>
+                <a href="#how">How it works</a>
+                <a href="#limits">Limits</a>
+                <a href="#faq">FAQ</a>
+            </nav>
+            <div class="topline-actions">
+                <a href="https://github.com/lukastojiljkovic/Power-Scheduler">GitHub</a>
+                <button type="button" id="theme"><span class="theme-light">Dark</span><span class="theme-dark">Light</span></button>
+            </div>
+        </div>
+
+        <div class="title">
+            <h1>Shut down later. Cancel any time.</h1>
+            <p class="sub">Pwrschdlr, a power scheduler without the vowels, shuts down, restarts, sleeps, hibernates or signs out of your PC when a timer runs out, and warns you first.</p>
+        </div>
+
+        <div class="get-it">
+            <p class="free">Free and open source</p>
+            <p class="where">MIT License. Windows 11, or Windows 10 1809+, x64.</p>
+            <div class="band-actions">
+                <a class="btn btn-app" href="https://github.com/lukastojiljkovic/Power-Scheduler/releases/latest">Download for Windows</a>
+                <a class="btn btn-line" href="https://github.com/lukastojiljkovic/Power-Scheduler">View the source</a>
+            </div>
         </div>
     </div>
 </header>
 
 <main id="main">
-    <section class="wrap hero" id="top">
-        <div class="hero-head">
-            <h1>Shut down later. Cancel any time.</h1>
-            <div class="hero-copy">
-                <p class="lede">Pwrschdlr, a power scheduler without the vowels, shuts down, restarts, sleeps, hibernates or signs out of your PC when a timer runs out, and warns you first.</p>
-                <div class="actions">
-                    <a class="btn btn-primary" href="https://github.com/lukastojiljkovic/Power-Scheduler/releases/latest">Download for Windows</a>
-                    <a class="btn" href="https://github.com/lukastojiljkovic/Power-Scheduler">View the source</a>
-                </div>
-                <p class="fine">Free and open source (MIT). Windows 11, or Windows 10 1809+, x64.</p>
-            </div>
-        </div>
-        <div class="desk desk-hero">
-            <img class="win win-light" src="images/countdown-light.png" width="926" height="733" alt="Pwrschdlr counting down to a shutdown, with Cancel timer and +15 minutes buttons" fetchpriority="high">
-            <img class="win win-dark" src="images/countdown-dark.png" width="926" height="733" alt="Pwrschdlr counting down to a shutdown, with Cancel timer and +15 minutes buttons">
+    <!-- The app on a plate of its colour, beside what it does at a glance -->
+    <section class="wrap grid lead">
+        <div class="plate plate-hero">
+            <img class="shot-light" src="images/countdown-light.png" width="926" height="733" alt="Pwrschdlr counting down to a shutdown, with Cancel timer and +15 minutes buttons" fetchpriority="high">
+            <img class="shot-dark" src="images/countdown-dark.png" width="926" height="733" alt="Pwrschdlr counting down to a shutdown, with Cancel timer and +15 minutes buttons">
         </div>
         <dl class="readout">
             <div class="row"><dt>Actions</dt><dd>Shut down, restart, sleep, hibernate, sign out</dd></div>
@@ -113,7 +119,7 @@
         </dl>
     </section>
 
-    <section class="wrap section" id="features">
+    <section class="wrap grid section" id="features">
         <h2 class="section-title">What it does</h2>
         <p class="section-lede">Windows can shut down on a timer with <code>shutdown /s /t 5400</code>, if you remember the flags, do the math in seconds and trust a command you can't see counting down. Pwrschdlr does the same in a window you can see, and lets you change your mind.</p>
         <div class="cells">
@@ -144,23 +150,23 @@
         </div>
         <div class="screens">
             <figure>
-                <div class="desk">
-                    <img class="win win-light" src="images/setup-light.png" width="926" height="733" alt="Setting a timer: the five actions, a delay of 1 hour 30 minutes and a summary saying when the PC shuts down" loading="lazy">
-                    <img class="win win-dark" src="images/setup-dark.png" width="926" height="733" alt="Setting a timer: the five actions, a delay of 1 hour 30 minutes and a summary saying when the PC shuts down" loading="lazy">
+                <div class="plate">
+                    <img class="shot-light" src="images/setup-light.png" width="926" height="733" alt="Setting a timer: the five actions, a delay of 1 hour 30 minutes and a summary saying when the PC shuts down" loading="lazy">
+                    <img class="shot-dark" src="images/setup-dark.png" width="926" height="733" alt="Setting a timer: the five actions, a delay of 1 hour 30 minutes and a summary saying when the PC shuts down" loading="lazy">
                 </div>
                 <figcaption>Pick what happens and when. The summary says exactly when.</figcaption>
             </figure>
             <figure>
-                <div class="desk">
-                    <img class="win win-light" src="images/warning-light.png" width="926" height="733" alt="The warning before a restart, counting down with Restart now, +15 minutes and Cancel buttons" loading="lazy">
-                    <img class="win win-dark" src="images/warning-dark.png" width="926" height="733" alt="The warning before a restart, counting down with Restart now, +15 minutes and Cancel buttons" loading="lazy">
+                <div class="plate">
+                    <img class="shot-light" src="images/warning-light.png" width="926" height="733" alt="The warning before a restart, counting down with Restart now, +15 minutes and Cancel buttons" loading="lazy">
+                    <img class="shot-dark" src="images/warning-dark.png" width="926" height="733" alt="The warning before a restart, counting down with Restart now, +15 minutes and Cancel buttons" loading="lazy">
                 </div>
                 <figcaption>The warning counts down on top of everything, with Cancel as the default.</figcaption>
             </figure>
         </div>
     </section>
 
-    <section class="wrap section" id="how">
+    <section class="wrap grid section" id="how">
         <h2 class="section-title">How it works</h2>
         <p class="section-lede">Pwrschdlr keeps the timer in Windows itself, so closing the app, or a crash, doesn't lose it.</p>
         <ol class="steps">
@@ -171,7 +177,7 @@
         </ol>
     </section>
 
-    <section class="wrap section" id="limits">
+    <section class="wrap grid section" id="limits">
         <h2 class="section-title">Tested, and honest about limits</h2>
         <div class="split">
             <div>
@@ -193,7 +199,7 @@
         </div>
     </section>
 
-    <section class="wrap section" id="faq">
+    <section class="wrap grid section" id="faq">
         <h2 class="section-title">Questions</h2>
         <div class="faq">
             <details><summary>How do you say Pwrschdlr?</summary><p>Power scheduler. It's the same name without the vowels.</p></details>
@@ -205,35 +211,35 @@
             <details><summary>Why does Windows SmartScreen warn about the installer?</summary><p>The installer isn't code-signed yet. Check that its SHA-256 hash matches the one in the <a href="https://github.com/lukastojiljkovic/Power-Scheduler/releases/latest">release notes</a> (<code>Get-FileHash</code> in PowerShell), then choose <b>More info</b> and <b>Run anyway</b>.</p></details>
         </div>
     </section>
+</main>
 
-    <section class="wrap get" id="download">
+<!-- The closing band mirrors the title band: the download, then the small print -->
+<footer class="band band-close" id="download">
+    <div class="wrap band-grid">
         <div class="get-copy">
-            <h2>Get Pwrschdlr</h2>
-            <p class="lede">One installer, no administrator approval, nothing else to install. Pwrschdlr starts from the Start menu and uninstalls from Settings, Apps, removing its settings and timer.</p>
-            <div class="actions">
-                <a class="btn btn-primary" href="https://github.com/lukastojiljkovic/Power-Scheduler/releases/latest">Download the latest release</a>
-                <a class="btn" href="https://github.com/lukastojiljkovic/Power-Scheduler#readme">Read the docs</a>
+            <h2 class="close-title">Get Pwrschdlr</h2>
+            <p class="sub">One installer, no administrator approval, nothing else to install. Pwrschdlr starts from the Start menu and uninstalls from Settings, Apps, removing its settings and timer.</p>
+            <div class="band-actions">
+                <a class="btn btn-app" href="https://github.com/lukastojiljkovic/Power-Scheduler/releases/latest">Download the latest release</a>
+                <a class="btn btn-line" href="https://github.com/lukastojiljkovic/Power-Scheduler#readme">Read the docs</a>
             </div>
         </div>
-        <dl>
+        <dl class="get-facts">
             <div><dt>Requires</dt><dd>Windows 11, or Windows 10 version 1809 or later, x64</dd></div>
             <div><dt>Installs</dt><dd>For your account, without administrator rights</dd></div>
             <div><dt>License</dt><dd>MIT, source on GitHub</dd></div>
             <div><dt>Verify</dt><dd>SHA-256 and build provenance in the release notes</dd></div>
         </dl>
-    </section>
-</main>
-
-<footer class="wrap">
-    <div class="foot">
-        <span>© 2026 <a href="https://lukastojiljkovic.github.io/CV/">Luka Stojiljković</a></span>
-        <nav aria-label="Legal">
-            <a href="https://github.com/lukastojiljkovic/Power-Scheduler/blob/main/TERMS.md">Terms</a>
-            <a href="https://github.com/lukastojiljkovic/Power-Scheduler/blob/main/PRIVACY.md">Privacy</a>
-            <a href="https://github.com/lukastojiljkovic/Power-Scheduler/blob/main/THIRD-PARTY-NOTICES.md">Third-party notices</a>
-            <a href="https://github.com/lukastojiljkovic/Power-Scheduler/security/policy">Security</a>
-        </nav>
-        <p>Windows is a trademark of the Microsoft group of companies. Pwrschdlr isn't affiliated with or endorsed by Microsoft.</p>
+        <div class="foot">
+            <span>© 2026 <a href="https://lukastojiljkovic.github.io/CV/">Luka Stojiljković</a></span>
+            <nav aria-label="Legal">
+                <a href="https://github.com/lukastojiljkovic/Power-Scheduler/blob/main/TERMS.md">Terms</a>
+                <a href="https://github.com/lukastojiljkovic/Power-Scheduler/blob/main/PRIVACY.md">Privacy</a>
+                <a href="https://github.com/lukastojiljkovic/Power-Scheduler/blob/main/THIRD-PARTY-NOTICES.md">Third-party notices</a>
+                <a href="https://github.com/lukastojiljkovic/Power-Scheduler/security/policy">Security</a>
+            </nav>
+            <p>Windows is a trademark of the Microsoft group of companies. Pwrschdlr isn't affiliated with or endorsed by Microsoft.</p>
+        </div>
     </div>
 </footer>
 
