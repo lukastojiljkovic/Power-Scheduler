@@ -5,6 +5,8 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-05
+
 ### Added
 
 - Pwrschdlr checks GitHub for a newer release when it starts (at most once a day) and from Settings, shows a banner
@@ -27,5 +29,6 @@ The first release.
 - An option to close apps without asking, so apps with unsaved work can't hold up a shutdown.
 - Light and dark themes that follow Windows, or a theme you choose.
 
-[Unreleased]: https://github.com/lukastojiljkovic/Power-Scheduler/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/lukastojiljkovic/Power-Scheduler/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/lukastojiljkovic/Power-Scheduler/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/lukastojiljkovic/Power-Scheduler/releases/tag/v1.0.0
