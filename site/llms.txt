@@ -8,7 +8,7 @@ Key facts:
 - The timer keeps running when the app is closed: a per-user scheduled task opens Pwrschdlr 30 seconds, 1, 2 or 5 minutes before the end, and the warning stays on top.
 - A timer that ran out while the PC was off, asleep or signed out is reported, never run late.
 - Requires Windows 11, or Windows 10 version 1809 or later, x64. Tested on Windows 11. English UI.
-- Installs for the current user without administrator rights. Collects no data and doesn't connect to the internet.
+- Installs for the current user without administrator rights. Collects no data; its only network request is a daily update check against GitHub, which can be turned off.
 - Verified by 55 unit tests, UI Automation on Windows 11 and a silent install and uninstall in CI.
 
 ## Download

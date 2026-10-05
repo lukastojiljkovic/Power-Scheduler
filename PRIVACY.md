@@ -1,9 +1,9 @@
 # Pwrschdlr Privacy Statement
 
-Last updated: 1 October 2026
+Last updated: 5 October 2026
 
 Pwrschdlr doesn't collect or send personal data to its author or anyone else. It has no accounts, telemetry,
-analytics, crash reporting or ads, and it doesn't connect to the internet.
+analytics, crash reporting or ads. The only request Pwrschdlr makes on its own is the update check described below.
 
 ## What stays on your PC
 
@@ -16,6 +16,16 @@ analytics, crash reporting or ads, and it doesn't connect to the internet.
 
 Cancelling the timer, or letting it run out, removes the timer and the task. Uninstalling Pwrschdlr removes all of the
 above for the account that runs the uninstaller.
+
+## Update check
+
+When Pwrschdlr starts, and when you press **Check now** in **Settings** > **Updates**, it asks GitHub for the latest
+release over HTTPS at `api.github.com/repos/lukastojiljkovic/Power-Scheduler/releases/latest`. The request carries
+Pwrschdlr's version in its User-Agent header; GitHub sees your IP address and the usual connection metadata, and
+GitHub's privacy statement applies. No other data is sent, and nothing about your PC is included. When you choose to
+update, the installer is downloaded from GitHub's release servers, and the SHA-256 checksum published with the release
+is verified before the installer is started. The automatic check runs at most once a day and can be turned off in
+**Settings** > **Updates**.
 
 ## Other
 
