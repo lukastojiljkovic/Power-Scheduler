@@ -1,6 +1,6 @@
 # Pwrschdlr Terms of Use
 
-Last updated: 1 October 2026
+Last updated: 5 October 2026
 
 These terms apply to the Pwrschdlr application and installer published at
 https://github.com/lukastojiljkovic/Power-Scheduler. Pwrschdlr's source code is licensed under the MIT License
@@ -58,7 +58,8 @@ Pwrschdlr isn't affiliated with or endorsed by Microsoft. Windows is a trademark
 
 ## 7. Privacy
 
-Pwrschdlr doesn't collect or send personal data, and it doesn't connect to the internet. See PRIVACY.md.
+Pwrschdlr doesn't collect or send personal data. The only network request it makes itself is the update check against
+GitHub; see PRIVACY.md.
 
 ## 8. Changes
 
