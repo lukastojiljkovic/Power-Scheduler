@@ -6,6 +6,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Pwrschdlr.Core;
+using Pwrschdlr.Core.Updates;
 using Pwrschdlr.Dialogs;
 using Pwrschdlr.Services;
 using Pwrschdlr.Views;
@@ -21,6 +22,8 @@ public sealed partial class MainWindow : Window
     private readonly bool _openedForWarning;
     private bool _warning;
     private bool _closing;
+    private ReleaseInfo? _availableRelease;
+    private CancellationTokenSource? _updateDownload;
 
     /// <param name="openedForWarning">Started by the timer's task, rather than by the user.</param>
     public MainWindow(bool openedForWarning)
@@ -30,12 +33,18 @@ public sealed partial class MainWindow : Window
         Dialogs = new DialogService(Root);
         Timer = new TimerService(DispatcherQueue);
         Timer.Ticked += OnTicked;
+        Updates = new UpdateCoordinator();
+        Updates.Checked += OnUpdateChecked;
         ConfigureWindow();
         ApplyTheme(AppSettings.Theme);
         NavView.SelectedItem = TimerItem;
 
         Root.Loaded += async (_, _) =>
         {
+            // A window the timer's task opened should not start a check; the
+            // user's own window does, in the background.
+            if (!_openedForWarning)
+                _ = Updates.CheckOnStartupAsync();
             if (_openedForWarning || !AppSettings.ShowWelcome)
                 return;
             var welcome = new WelcomeDialog();
@@ -48,6 +57,8 @@ public sealed partial class MainWindow : Window
     internal DialogService Dialogs { get; }
 
     internal TimerService Timer { get; }
+
+    internal UpdateCoordinator Updates { get; }
 
     private nint WindowHandle => Win32Interop.GetWindowFromWindowId(AppWindow.Id);
 
@@ -77,6 +88,7 @@ public sealed partial class MainWindow : Window
         StatusBar.Severity = severity;
         StatusBar.Title = title;
         StatusBar.Message = message;
+        StatusBar.Content = null;
         StatusBar.IsOpen = true;
     }
 
@@ -106,6 +118,7 @@ public sealed partial class MainWindow : Window
     private void OnTicked(object? sender, EventArgs e)
     {
         var now = DateTimeOffset.Now;
+        RefreshUpdateActions();
         Title = Timer.Current is { } running ? $"{Timing.Countdown(running.Remaining(now))} · Pwrschdlr" : "Pwrschdlr";
         if (_warning || Timer.Current is not { } schedule)
             return;
@@ -196,6 +209,7 @@ public sealed partial class MainWindow : Window
     private void OnNavigationSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
         HideStatus();
+        RefreshUpdateActions();
         PageHost.Content = args.IsSettingsSelected ? new SettingsView(this) : new TimerView(this);
     }
 
@@ -215,4 +229,122 @@ public sealed partial class MainWindow : Window
 
     [LibraryImport("user32.dll")]
     private static partial uint GetDpiForWindow(nint hwnd);
+
+    /// <summary>The startup check's result. Only a newer version opens the bar.</summary>
+    private void OnUpdateChecked(object? sender, UpdateCheckResult result)
+    {
+        if (result is { Status: UpdateCheckStatus.UpdateAvailable, Release: { } release })
+            ShowUpdateAvailable(release);
+    }
+
+    internal void ShowUpdateAvailable(ReleaseInfo release)
+    {
+        _availableRelease = release;
+        UpdateBar.Title = $"Pwrschdlr {release.Version.ToString(3)} is available";
+        UpdateBar.Message = $"You are running Pwrschdlr {Updates.CurrentVersion.ToString(3)}.";
+        UpdateBar.IsOpen = true;
+        RefreshUpdateActions();
+    }
+
+    /// <summary>
+    /// An update closes Pwrschdlr, so it cannot start while a timer is armed:
+    /// the countdown the user is relying on would disappear with the window.
+    /// </summary>
+    private void RefreshUpdateActions() =>
+        UpdateInstallButton.IsEnabled = Timer.Current is null && _updateDownload is null;
+
+    private void OnUpdateBarClosed(InfoBar sender, object args) => _availableRelease = null;
+
+    private async void OnUpdateNotesClick(object sender, RoutedEventArgs e)
+    {
+        if (_availableRelease is { } release)
+            await UpdatePrompts.ShowReleaseNotesAsync(Dialogs, release);
+    }
+
+    private async void OnUpdateInstallClick(object sender, RoutedEventArgs e)
+    {
+        if (_availableRelease is { } release)
+            await DownloadUpdateAsync(release);
+    }
+
+    /// <summary>
+    /// Downloads the release's installer, verifies it against its checksum,
+    /// then starts it and closes the window. Progress and cancel use the status
+    /// bar, so no modal has to be dismissed when the work finishes.
+    /// </summary>
+    private async Task DownloadUpdateAsync(ReleaseInfo release)
+    {
+        if (Timer.Current is not null)
+        {
+            ShowStatus(InfoBarSeverity.Warning, "A timer is running", "Cancel the timer before updating Pwrschdlr.");
+            return;
+        }
+        if (_updateDownload is not null)
+            return;
+
+        using var cancellation = new CancellationTokenSource();
+        _updateDownload = cancellation;
+        RefreshUpdateActions();
+
+        var progressBar = new ProgressBar { Width = 220, IsIndeterminate = true, VerticalAlignment = VerticalAlignment.Center };
+        var percent = new TextBlock { VerticalAlignment = VerticalAlignment.Center, Text = "0%" };
+        var cancel = new Button { Content = "Cancel" };
+        cancel.Click += (_, _) => cancellation.Cancel();
+        StatusBar.Severity = InfoBarSeverity.Informational;
+        StatusBar.Title = $"Downloading Pwrschdlr {release.Version.ToString(3)}\u2026";
+        StatusBar.Message = "Pwrschdlr verifies the installer before it runs it.";
+        StatusBar.Content = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 12,
+            Children = { progressBar, percent, cancel },
+        };
+        StatusBar.IsOpen = true;
+
+        var progress = new Progress<UpdateProgress>(update =>
+        {
+            if (update.TotalBytes is not > 0)
+                return;
+            progressBar.IsIndeterminate = false;
+            progressBar.Value = Math.Clamp(100.0 * update.BytesReceived / update.TotalBytes.Value, 0, 100);
+            percent.Text = $"{progressBar.Value:0}%";
+        });
+
+        UpdateDownloadResult result;
+        try
+        {
+            result = await Updates.Service.DownloadAsync(release, cancellation.Token, progress);
+        }
+        catch (OperationCanceledException)
+        {
+            ShowStatus(InfoBarSeverity.Informational, "Update cancelled", "Pwrschdlr is unchanged.");
+            return;
+        }
+        finally
+        {
+            _updateDownload = null;
+            StatusBar.Content = null;
+            RefreshUpdateActions();
+        }
+
+        StatusBar.IsOpen = false;
+        if (!result.Success)
+        {
+            await UpdatePrompts.ShowUpdateFailureAsync(Dialogs, result.Error ?? "The installer could not be downloaded.", result.ReleasePageUrl);
+            return;
+        }
+
+        switch (await Updates.Service.InstallAsync(result, CancellationToken.None))
+        {
+            case InstallOutcome.Started:
+                Close();
+                break;
+            case InstallOutcome.Cancelled:
+                ShowStatus(InfoBarSeverity.Informational, "Update cancelled", "Windows did not get permission to run the installer.");
+                break;
+            default:
+                await UpdatePrompts.ShowUpdateFailureAsync(Dialogs, "The installer could not be started.", release.PageUrl);
+                break;
+        }
+    }
 }
