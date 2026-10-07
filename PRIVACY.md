@@ -1,6 +1,6 @@
 # Pwrschdlr Privacy Statement
 
-Last updated: 5 October 2026
+Last updated: 7 October 2026
 
 Pwrschdlr doesn't collect or send personal data to its author or anyone else. It has no accounts, telemetry,
 analytics, crash reporting or ads. The only request Pwrschdlr makes on its own is the update check described below.
@@ -13,9 +13,11 @@ analytics, crash reporting or ads. The only request Pwrschdlr makes on its own i
   and runs out.
 - **The scheduled task** named `Pwrschdlr timer-<your account's SID>` opens Pwrschdlr for the warning. It exists only
   while a timer is running, and runs without administrator rights.
+- **A downloaded installer.** If you choose to update, the new installer is saved to
+  `%LOCALAPPDATA%\Pwrschdlr\Updates` before it runs. A later download removes the earlier files from that folder.
 
-Cancelling the timer, or letting it run out, removes the timer and the task. Uninstalling Pwrschdlr removes all of the
-above for the account that runs the uninstaller.
+Cancelling the timer, or letting it run out, removes the timer and the task. Uninstalling Pwrschdlr removes the
+settings and the timer for the account that runs the uninstaller.
 
 ## Update check
 

@@ -124,6 +124,8 @@ site/                        The website, published to GitHub Pages
   the update check against GitHub
 - [Third-Party Notices](THIRD-PARTY-NOTICES.md)
 - [Security Policy](SECURITY.md)
+- [Support](SUPPORT.md) and the [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Product](PRODUCT.md) and [design](DESIGN.md) notes
 
 Windows is a trademark of the Microsoft group of companies. Pwrschdlr isn't affiliated with or endorsed by Microsoft.
 
