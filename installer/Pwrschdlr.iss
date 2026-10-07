@@ -65,3 +65,8 @@ Filename: "{app}\{#AppExeName}"; Description: "{cm:LaunchProgram,{#AppName}}"; F
 [UninstallRun]
 ; Cancels a running timer by removing its scheduled task, and removes the settings.
 Filename: "{app}\{#AppExeName}"; Parameters: "--uninstall"; Flags: runhidden waituntilterminated; RunOnceId: "RemoveUserData"
+
+[UninstallDelete]
+; An update installer that was downloaded but never run (PRIVACY.md).
+Type: filesandordirs; Name: "{localappdata}\{#AppName}\Updates"
+Type: dirifempty; Name: "{localappdata}\{#AppName}"

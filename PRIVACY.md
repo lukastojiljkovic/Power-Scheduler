@@ -17,7 +17,7 @@ analytics, crash reporting or ads. The only request Pwrschdlr makes on its own i
   `%LOCALAPPDATA%\Pwrschdlr\Updates` before it runs. A later download removes the earlier files from that folder.
 
 Cancelling the timer, or letting it run out, removes the timer and the task. Uninstalling Pwrschdlr removes the
-settings and the timer for the account that runs the uninstaller.
+settings, the timer and the update downloads for the account that runs the uninstaller.
 
 ## Update check
 
