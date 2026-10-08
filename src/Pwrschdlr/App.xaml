@@ -23,6 +23,17 @@
                 <Setter Property="TextWrapping" Value="WrapWholeWords" />
             </Style>
 
+            <!-- Release notes: the bullet beside each item, and the release date caption. -->
+            <Style x:Key="ReleaseNotesBulletStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+                <Setter Property="Margin" Value="2,0,10,0" />
+            </Style>
+
+            <Style x:Key="ReleaseNotesDateStyle" TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+                <Setter Property="Margin" Value="0,0,0,16" />
+            </Style>
+
             <Style x:Key="CardStyle" TargetType="Grid">
                 <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
                 <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
