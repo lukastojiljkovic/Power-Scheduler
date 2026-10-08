@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Pwrschdlr: free shutdown timer for Windows 11</title>
-    <meta name="description" content="Pwrschdlr is a free, open-source shutdown timer for Windows 11. It shuts down, restarts, sleeps, hibernates or signs out of your PC after a delay or at a time, shows the countdown, and warns you before the end so you can cancel.">
+    <meta name="description" content="Pwrschdlr is a free, open-source shutdown timer for Windows 11. It shuts down, restarts, sleeps, hibernates or signs out of your PC after a delay, at a time, when something ends, or on a repeat, shows the countdown, and warns you before the end so you can cancel.">
     <meta name="author" content="Luka Stojiljković">
     <link rel="canonical" href="https://lukastojiljkovic.github.io/Power-Scheduler/">
 
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Pwrschdlr">
     <meta property="og:title" content="Pwrschdlr: shut down later, cancel any time">
-    <meta property="og:description" content="A power scheduler without the vowels. Shuts down, restarts, sleeps, hibernates or signs out of your PC when a timer runs out, in a native Windows 11 app. Free and open source.">
+    <meta property="og:description" content="A power scheduler without the vowels. Shuts down, restarts, sleeps, hibernates or signs out of your PC when a timer runs out, when something ends or on the days you choose, in a native Windows 11 app. Free and open source.">
     <meta property="og:url" content="https://lukastojiljkovic.github.io/Power-Scheduler/">
     <meta property="og:image" content="https://lukastojiljkovic.github.io/Power-Scheduler/images/countdown-light.png">
     <meta property="og:image:alt" content="Pwrschdlr counting down to a shutdown">
@@ -40,7 +40,7 @@
                 "@type": "SoftwareApplication",
                 "name": "Pwrschdlr",
                 "alternateName": "Power Scheduler",
-                "description": "Windows shutdown timer that shuts down, restarts, sleeps, hibernates or signs out of a PC after a delay or at a time of day. It shows the countdown, keeps running when closed through a scheduled task, and opens a warning before the end so the user can cancel or postpone.",
+                "description": "Windows shutdown timer that shuts down, restarts, sleeps, hibernates or signs out of a PC after a delay, at a time of day, when something ends (downloads finish, an app closes, or nobody uses the PC), or on a repeating schedule for chosen weekdays. It shows the countdown, keeps running when closed through a scheduled task, and opens a warning before the end so the user can cancel or postpone.",
                 "applicationCategory": "UtilitiesApplication",
                 "operatingSystem": "Windows 11, Windows 10 version 1809 or later",
                 "url": "https://lukastojiljkovic.github.io/Power-Scheduler/",
@@ -61,7 +61,11 @@
                     { "@type": "Question", "name": "What if my PC is asleep or off when the timer runs out?", "acceptedAnswer": { "@type": "Answer", "text": "Nothing happens. Pwrschdlr tells you about the missed timer the next time it opens, and never runs it late." } },
                     { "@type": "Question", "name": "Does Pwrschdlr need administrator rights?", "acceptedAnswer": { "@type": "Answer", "text": "No. Setup installs it for your account only, and the timer's scheduled task runs as you, without administrator rights." } },
                     { "@type": "Question", "name": "Does Pwrschdlr collect any data?", "acceptedAnswer": { "@type": "Answer", "text": "No. Pwrschdlr collects nothing. The only request it makes itself is the update check, which asks GitHub for the latest release and sends nothing but its version number. Its settings and timer stay in your registry." } },
-                    { "@type": "Question", "name": "Why does Windows SmartScreen warn about the installer?", "acceptedAnswer": { "@type": "Answer", "text": "The installer isn't code-signed yet. Check that its SHA-256 hash matches the one in the release notes, then choose More info and Run anyway." } }
+                    { "@type": "Question", "name": "Why does Windows SmartScreen warn about the installer?", "acceptedAnswer": { "@type": "Answer", "text": "The installer isn't code-signed yet. Check that its SHA-256 hash matches the one in the release notes, then choose More info and Run anyway." } },
+                    { "@type": "Question", "name": "Can Pwrschdlr wait for something instead of a time?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. With When something ends, Pwrschdlr waits for your downloads to finish, for an app to close, or for nobody to use the PC, and then runs the timer with its usual warning and cancel. It watches only while its window is open." } },
+                    { "@type": "Question", "name": "Does waiting for something work when Pwrschdlr is closed?", "acceptedAnswer": { "@type": "Answer", "text": "No. Pwrschdlr watches for something to end only while its window is open; you can minimize it, but closing it stops the wait. Repeat is different: its scheduled task opens Pwrschdlr for the warning before each occurrence, so it works with the window closed." } },
+                    { "@type": "Question", "name": "Can Pwrschdlr repeat a shutdown on chosen days?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Repeat saves a time and the days of the week, such as shut down on weekdays at 23:30. A repeat that came while your PC was off, asleep or signed out is reported as missed, never run late, and one that comes while a timer or a wait is running is skipped." } },
+                    { "@type": "Question", "name": "What does the update notice show?", "acceptedAnswer": { "@type": "Answer", "text": "Pwrschdlr shows just what changed, grouped New, Improved and Fixed, with the release date and a link to the full notes on GitHub. After an update, it shows what changed in the version you just got." } }
                 ]
             }
         ]
@@ -113,7 +117,7 @@
         </div>
         <dl class="readout">
             <div class="row"><dt>Actions</dt><dd>Shut down, restart, sleep, hibernate, sign out</dd></div>
-            <div class="row"><dt>When</dt><dd>In a while, or at a time</dd></div>
+            <div class="row"><dt>When</dt><dd>In a while, at a time, when something ends, or on a repeat</dd></div>
             <div class="row"><dt>Warning</dt><dd>30 s to 5 min before, on top</dd></div>
             <div class="row"><dt>Data sent</dt><dd><b>None</b></dd></div>
         </dl>
@@ -132,6 +136,14 @@
                 <p>Set how long to wait, with presets from 15 minutes to 4 hours, or pick a time of day. Daylight saving time is handled.</p>
             </article>
             <article class="cell">
+                <h3>When something ends</h3>
+                <p>Instead of a time, wait for your downloads to finish, for an app to close, or for nobody to use the PC. Pwrschdlr watches while its window is open, shows what it is reading, and then runs the timer as usual.</p>
+            </article>
+            <article class="cell">
+                <h3>Repeat</h3>
+                <p>Set a time and the days of the week, such as shut down on weekdays at 23:30. A per-user scheduled task opens Pwrschdlr for the warning before each occurrence, so it works with the window closed.</p>
+            </article>
+            <article class="cell">
                 <h3>A countdown you can see</h3>
                 <p>A ring empties as the time runs out, and the taskbar shows the time left. Cancel or add 15 minutes at any time.</p>
             </article>
@@ -146,6 +158,10 @@
             <article class="cell">
                 <h3>Never late</h3>
                 <p>If your PC was off or asleep when the timer ran out, Pwrschdlr tells you and does nothing, instead of shutting down when you come back.</p>
+            </article>
+            <article class="cell">
+                <h3>Readable updates</h3>
+                <p>When a new version is out, Pwrschdlr shows what changed in plain words, grouped New, Improved and Fixed, with a link to the full notes. After it updates, it shows what changed in the version you got.</p>
             </article>
         </div>
         <div class="screens">
@@ -170,8 +186,9 @@
         <h2 class="section-title">How it works</h2>
         <p class="section-lede">Pwrschdlr keeps the timer in Windows itself, so closing the app, or a crash, doesn't lose it.</p>
         <ol class="steps">
-            <li><div><h3>A scheduled task, not a background app</h3><p>Starting a timer adds a one-time task to Windows Task Scheduler that opens Pwrschdlr when the warning starts. The task runs as you, without administrator rights, and is removed when the timer ends or you cancel it.</p></div></li>
-            <li><div><h3>One timer</h3><p>The timer is stored in your part of the registry. Starting a new one replaces it, and changing the warning moves the task.</p></div></li>
+            <li><div><h3>A scheduled task, not a background app</h3><p>Starting a timer adds a one-time task to Windows Task Scheduler that opens Pwrschdlr when the warning starts, and a repeat adds a weekly task that opens Pwrschdlr before each occurrence. The tasks run as you, without administrator rights, and are removed when the timer ends, you cancel it, or you remove the repeat.</p></div></li>
+            <li><div><h3>One timer, one repeat</h3><p>The timer and a saved repeat are stored in your part of the registry. Starting a new timer replaces the old one, and changing the warning moves the task.</p></div></li>
+            <li><div><h3>Waiting happens in the window</h3><p>When something ends, Pwrschdlr reads the condition while its window is open, once a second, and saves nothing for it. When the condition is met, it starts an ordinary timer.</p></div></li>
             <li><div><h3>Windows does the action</h3><p>Shut down, restart, sign out and hibernate use <code>shutdown.exe</code>. Sleep uses the Windows power API, and on Modern Standby PCs, which have no classic sleep, it turns off the display, which is how those PCs go to sleep.</p></div></li>
             <li><div><h3>Late is never</h3><p>When the warning ends, Pwrschdlr acts only if the end has just passed. A timer that ran out while the PC was off, asleep or signed out is reported instead.</p></div></li>
         </ol>
@@ -183,7 +200,7 @@
             <div>
                 <h3>How it's verified</h3>
                 <ul>
-                    <li><b>55 unit tests</b> cover the timer's phases, postponing, countdowns and times across daylight saving time, the registry storage, the <code>shutdown.exe</code> arguments and a real round trip through Task Scheduler.</li>
+                    <li><b>164 unit tests</b> cover the timer's phases, postponing, countdowns and times across daylight saving time, the registry storage, the <code>shutdown.exe</code> arguments, the waits for something to end, the repeating schedule and a real round trip through Task Scheduler.</li>
                     <li><b>UI Automation</b> on Windows 11 Pro 26H2 checks setting, cancelling and postponing a timer, the warning, the task opening a closed Pwrschdlr, a missed timer and both themes.</li>
                     <li><b>CI</b> builds the installer, then installs and uninstalls it silently on every push, checking that nothing is left behind.</li>
                 </ul>
@@ -194,6 +211,10 @@
                     <li><b>Run while you're signed out.</b> If you sign out, or your PC is off or asleep when the timer runs out, nothing happens.</li>
                     <li><b>Overrule Windows.</b> An app with unsaved work or a policy can hold up the action, unless you let Pwrschdlr close apps without asking.</li>
                     <li><b>Plan days ahead.</b> Timers can be up to 23 hours 59 minutes away.</li>
+                    <li><b>Wait in the background.</b> Waiting for something to end works only while Pwrschdlr's window is open. You can minimize it, but closing it stops the wait.</li>
+                    <li><b>Tell downloads apart.</b> Downloads finish counts everything your PC receives on its network adapters, so streaming or a call keeps the rate up.</li>
+                    <li><b>Notice a controller or a video.</b> Nobody uses the PC counts only mouse and keyboard input, so a game controller or a playing video can count as idle.</li>
+                    <li><b>Catch up a repeat.</b> A repeat that came while your PC was off, asleep or signed out is reported as missed, never run late, and one that comes while a timer or a wait is running is skipped.</li>
                 </ul>
             </div>
         </div>
@@ -209,6 +230,10 @@
             <details><summary>Does Pwrschdlr need administrator rights?</summary><p>No. Setup installs it for your account only, and the timer's scheduled task runs as you, without administrator rights.</p></details>
             <details><summary>Does Pwrschdlr collect any data?</summary><p>No. Pwrschdlr collects nothing. The only request it makes itself is the update check, which asks GitHub for the latest release and sends nothing but its version number. Its settings and timer stay in your registry. See the <a href="https://github.com/lukastojiljkovic/Power-Scheduler/blob/main/PRIVACY.md">privacy statement</a>.</p></details>
             <details><summary>Why does Windows SmartScreen warn about the installer?</summary><p>The installer isn't code-signed yet. Check that its SHA-256 hash matches the one in the <a href="https://github.com/lukastojiljkovic/Power-Scheduler/releases/latest">release notes</a> (<code>Get-FileHash</code> in PowerShell), then choose <b>More info</b> and <b>Run anyway</b>.</p></details>
+            <details><summary>Can Pwrschdlr wait for something instead of a time?</summary><p>Yes. With When something ends, Pwrschdlr waits for your downloads to finish, for an app to close, or for nobody to use the PC, and then runs the timer with its usual warning and cancel. It watches only while its window is open.</p></details>
+            <details><summary>Does waiting for something work when Pwrschdlr is closed?</summary><p>No. Pwrschdlr watches for something to end only while its window is open; you can minimize it, but closing it stops the wait. Repeat is different: its scheduled task opens Pwrschdlr for the warning before each occurrence, so it works with the window closed.</p></details>
+            <details><summary>Can Pwrschdlr repeat a shutdown on chosen days?</summary><p>Yes. Repeat saves a time and the days of the week, such as shut down on weekdays at 23:30. A repeat that came while your PC was off, asleep or signed out is reported as missed, never run late, and one that comes while a timer or a wait is running is skipped.</p></details>
+            <details><summary>What does the update notice show?</summary><p>Pwrschdlr shows just what changed, grouped New, Improved and Fixed, with the release date and a link to the full notes on GitHub. After an update, it shows what changed in the version you just got.</p></details>
         </div>
     </section>
 </main>

@@ -35,12 +35,20 @@ Download `Pwrschdlr-<version>-Setup.exe` from the [latest release](https://githu
 - **Five actions:** shut down, restart, sleep, hibernate or sign out. Actions your PC can't do, such as hibernating
   when hibernation is off, are grayed out with the reason.
 - **In a while or at a time.** Set how long to wait, with presets from 15 minutes to 4 hours, or pick a time of day.
+- **When something ends.** Instead of a time, wait for your downloads to finish, for an app with a window to close, or
+  for nobody to use the PC. Pwrschdlr watches while its window is open and shows what it is reading; when the thing
+  you waited for happens, the normal timer takes over, with its warning and the chance to cancel.
+- **Repeat.** Set a time and the days of the week, for example shut down on weekdays at 23:30. A per-user scheduled
+  task opens Pwrschdlr for the warning before each occurrence, so it works with the window closed.
 - **A countdown you can see.** A ring empties as the time runs out, and the taskbar shows the time left.
 - **Cancel or postpone** by 15 minutes at any time.
 - **Close it and forget it.** The timer keeps running when Pwrschdlr is closed. Pwrschdlr opens again 30 seconds, 1, 2
   or 5 minutes before the end and counts down in a warning that stays on top, so you can still cancel or postpone.
 - **Never late.** If your PC was off, asleep or signed out when the timer ran out, Pwrschdlr tells you and does nothing,
   instead of shutting down when you come back.
+- **Readable updates.** When a new version is available, Pwrschdlr shows what changed in plain words, grouped into
+  New, Improved and Fixed, with one link to the full notes instead of the whole technical release page. After it
+  updates, it shows what changed in the version you just got.
 - **Close apps without asking**, if you want, so an app with unsaved work can't hold up a shutdown.
 - Light and dark themes that follow Windows, or a theme you choose.
 
@@ -52,9 +60,13 @@ Download `Pwrschdlr-<version>-Setup.exe` from the [latest release](https://githu
 ## How it works
 
 - **A scheduled task, not a background app.** Starting a timer adds a one-time task to Windows Task Scheduler that
-  opens Pwrschdlr when the warning starts. Nothing of Pwrschdlr runs in the meantime, and the timer survives closing
-  the app. The task runs as you, without administrator rights, and is removed when the timer ends or you cancel it.
-- **One timer.** It's stored under `HKEY_CURRENT_USER\Software\Pwrschdlr\Timer`. Starting a new one replaces it.
+  opens Pwrschdlr when the warning starts, and a repeat adds a weekly task that opens Pwrschdlr before each
+  occurrence. Nothing of Pwrschdlr runs in the meantime, and the timer survives closing the app. The tasks run as
+  you, without administrator rights, and are removed when the timer ends, you cancel it, or you remove the repeat.
+- **One timer, one repeat.** The timer is stored under `HKEY_CURRENT_USER\Software\Pwrschdlr\Timer` and the repeat
+  under `...\Repeat`. Starting a new timer replaces the old one, and saving a repeat replaces the saved repeat.
+- **Waiting for something to end happens in the window.** Pwrschdlr reads the condition while its window is open, once
+  a second, and saves nothing for it. When the condition is met, it starts an ordinary timer.
 - **Windows does the action.** Shut down, restart, sign out and hibernate use `shutdown.exe`. Sleep uses the Windows
   power API, and on PCs with Modern Standby, which have no classic sleep, it turns off the display, which is how those
   PCs go to sleep.
@@ -68,9 +80,10 @@ Download `Pwrschdlr-<version>-Setup.exe` from the [latest release](https://githu
 
 ## Verification
 
-- **Unit tests:** `dotnet test --project tests/Pwrschdlr.Core.Tests` runs 55 tests. They cover the timer's phases,
+- **Unit tests:** `dotnet test --project tests/Pwrschdlr.Core.Tests` runs 164 tests. They cover the timer's phases,
   postponing, the countdown and the times it shows (including daylight saving time), the timer's registry storage,
-  the `shutdown.exe` arguments and a real round trip through Task Scheduler.
+  the `shutdown.exe` arguments, the conditions that wait for something to end (downloads, an app closing and nobody
+  using the PC), the repeating schedule and the day it opens, and a real round trip through Task Scheduler.
 - **UI Automation** on Windows 11 Pro 26H2 (build 26300), with a Debug build, which shows what it would do instead of
   doing it: setting, cancelling and postponing a timer, the warning's Cancel and postpone, a timer that runs out, the
   task opening a closed Pwrschdlr for the warning, a missed timer, changing the warning moving the task, a second start
@@ -90,8 +103,16 @@ when it ends.
   without asking** is on.
 - On Modern Standby PCs, sleep turns off the display, and Windows decides when the PC goes to sleep after that.
 - Timers can be up to 23 hours 59 minutes away.
+- Waiting for something to end works only while Pwrschdlr's window is open. You can minimize it, but closing it stops
+  the wait.
+- **Downloads finish** counts everything your PC receives on its network adapters, not only downloads, so streaming
+  or a call keeps the rate above the threshold.
+- **Nobody uses the PC** counts only mouse and keyboard input. A game controller or a video playing doesn't count as
+  use, so a film can count as idle.
+- A **repeat** occurrence that came while your PC was off, asleep or signed out is reported as missed, and never run
+  late. One that comes while a timer or a wait is running is skipped.
 - Pwrschdlr is x64 only and in English. It has been tested on Windows 11; Windows 10 hasn't been tested.
-- Uninstalling removes the settings and timer of the account that runs the uninstaller.
+- Uninstalling removes the settings, the timer and the repeat of the account that runs the uninstaller.
 
 ## Building
 
@@ -109,9 +130,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the rules the code follows.
 ## Project structure
 
 ```text
-src/Pwrschdlr.Core           All logic, no UI: the timer, times and countdowns, the registry store, the scheduled
-                             task and the power actions
-src/Pwrschdlr                WinUI 3 app; the task starts it with --due, and the uninstaller with --uninstall
+src/Pwrschdlr.Core           All logic, no UI: the timer, times and countdowns, the conditions that wait for
+                             something to end, the repeating schedules, the registry store, the scheduled tasks and
+                             the power actions
+src/Pwrschdlr                WinUI 3 app; a task starts it with --due or --repeat, and the uninstaller with
+                             --uninstall
 tests/Pwrschdlr.Core.Tests   Unit tests (xUnit v3)
 installer/Pwrschdlr.iss      Inno Setup script
 site/                        The website, published to GitHub Pages
@@ -121,7 +144,8 @@ site/                        The website, published to GitHub Pages
 
 - [Terms of Use](TERMS.md), which Setup asks you to accept
 - [Privacy Statement](PRIVACY.md): Pwrschdlr doesn't collect or send personal data; the only request it makes itself is
-  the update check against GitHub
+  the update check against GitHub. The waits for something to end read your PC's network counters, running apps and
+  input, all on your PC
 - [Third-Party Notices](THIRD-PARTY-NOTICES.md)
 - [Security Policy](SECURITY.md)
 - [Support](SUPPORT.md) and the [Code of Conduct](CODE_OF_CONDUCT.md)
