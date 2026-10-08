@@ -87,6 +87,16 @@ internal static class AppSettings
         set => WriteTime(nameof(LastUpdateCheckUtc), value);
     }
 
+    /// <summary>
+    /// The version the last run recorded, so the first run of a new version can
+    /// show what changed. Older versions wrote the check time but not this.
+    /// </summary>
+    public static string? LastRunVersion
+    {
+        get => ReadString(nameof(LastRunVersion));
+        set => WriteString(nameof(LastRunVersion), value);
+    }
+
     /// <summary>The same store, as the update service sees it.</summary>
     public static IUpdatePreferences UpdatePreferences { get; } = new UpdatePreferencesAdapter();
 
@@ -131,5 +141,20 @@ internal static class AppSettings
             key.SetValue(name, time.ToUnixTimeSeconds(), RegistryValueKind.QWord);
         else
             key.DeleteValue(name, throwOnMissingValue: false);
+    }
+
+    private static string? ReadString(string name)
+    {
+        using var key = Registry.CurrentUser.OpenSubKey(KeyPath);
+        return key?.GetValue(name) as string;
+    }
+
+    private static void WriteString(string name, string? value)
+    {
+        using var key = Registry.CurrentUser.CreateSubKey(KeyPath);
+        if (value is null)
+            key.DeleteValue(name, throwOnMissingValue: false);
+        else
+            key.SetValue(name, value, RegistryValueKind.String);
     }
 }

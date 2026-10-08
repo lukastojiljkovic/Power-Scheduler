@@ -1,5 +1,9 @@
 Pwrschdlr shuts down, restarts, puts to sleep, hibernates or signs out of your PC when a timer runs out, in a native Windows 11 app.
 
+## What's new
+
+{{CHANGES}}
+
 ## Download
 
 **{{FILE}}** for Windows 11, or Windows 10 version 1809 or later, x64.
@@ -9,10 +13,6 @@ SHA-256: `{{SHA256}}`
 - **SmartScreen.** The installer isn't code-signed yet, so Windows may warn you. Check the hash with `Get-FileHash .\{{FILE}}`, then select **More info** > **Run anyway**.
 - **No administrator approval.** Setup installs Pwrschdlr for your account only, under `%LOCALAPPDATA%\Programs`.
 - **Provenance.** GitHub attests that this installer was built by this repository's release workflow: `gh attestation verify {{FILE}} --repo {{REPOSITORY}}`.
-
-## What's new
-
-{{CHANGES}}
 
 ## Verification
 

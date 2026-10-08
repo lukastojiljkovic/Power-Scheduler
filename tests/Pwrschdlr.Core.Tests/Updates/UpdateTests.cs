@@ -77,6 +77,24 @@ public sealed class ReleaseReaderTests
         Assert.False(ReleaseReader.TryParse("not json", out _, out var failure));
         Assert.Equal("the release data was not valid JSON", failure);
     }
+
+    [Fact]
+    public void A_published_at_time_is_parsed()
+    {
+        Assert.True(ReleaseReader.TryParse(Releases.Json("v1.2.0", publishedAt: "2026-10-07T09:30:00Z"), out var release, out _));
+
+        Assert.Equal(new DateTimeOffset(2026, 10, 7, 9, 30, 0, TimeSpan.Zero), release!.PublishedAt);
+    }
+
+    [Fact]
+    public void A_missing_or_unreadable_published_at_leaves_it_null_and_still_parses()
+    {
+        Assert.True(ReleaseReader.TryParse(Releases.Json("v1.2.0"), out var release, out _));
+        Assert.Null(release!.PublishedAt);
+
+        Assert.True(ReleaseReader.TryParse(Releases.Json("v1.2.0", publishedAt: "not a date"), out var unreadable, out _));
+        Assert.Null(unreadable!.PublishedAt);
+    }
 }
 
 public sealed class SidecarParserTests

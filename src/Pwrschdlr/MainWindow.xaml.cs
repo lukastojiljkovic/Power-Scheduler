@@ -41,11 +41,24 @@ public sealed partial class MainWindow : Window
 
         Root.Loaded += async (_, _) =>
         {
-            // A window the timer's task opened should not start a check; the
-            // user's own window does, in the background.
-            if (!_openedForWarning)
-                _ = Updates.CheckOnStartupAsync();
-            if (_openedForWarning || !AppSettings.ShowWelcome)
+            // Read before the check runs: a successful check overwrites LastUpdateCheckUtc.
+            // A version written before this feature existed recorded the check time but not
+            // LastRunVersion, which is how an update from one of those is recognised.
+            var previous = AppSettings.LastRunVersion;
+            var ranBefore = previous is not null || AppSettings.LastUpdateCheckUtc is not null;
+            var current = AppVersion.Current;
+
+            // A window the timer's task opened should not start a check or use
+            // up the notes of a new version; the user's own window does both.
+            if (_openedForWarning)
+                return;
+            AppSettings.LastRunVersion = current.ToString(3);
+            _ = Updates.CheckOnStartupAsync();
+
+            // Never two dialogs at startup: a launch that shows what changed skips the welcome.
+            if (await ShowUpdatedNotesAsync(ranBefore, previous, current))
+                return;
+            if (!AppSettings.ShowWelcome)
                 return;
             var welcome = new WelcomeDialog();
             await Dialogs.ShowAsync(welcome);
@@ -241,9 +254,34 @@ public sealed partial class MainWindow : Window
     {
         _availableRelease = release;
         UpdateBar.Title = $"Pwrschdlr {release.Version.ToString(3)} is available";
-        UpdateBar.Message = $"You are running Pwrschdlr {Updates.CurrentVersion.ToString(3)}.";
+        UpdateBar.Message = $"You have Pwrschdlr {Updates.CurrentVersion.ToString(3)}.";
         UpdateBar.IsOpen = true;
         RefreshUpdateActions();
+    }
+
+    /// <summary>
+    /// The first run of a version the user did not run before shows what
+    /// changed, when the embedded changelog has notes for it. Returns true when
+    /// the dialog was shown.
+    /// </summary>
+    private async Task<bool> ShowUpdatedNotesAsync(bool ranBefore, string? previous, Version current)
+    {
+#if DEBUG
+        // Debug builds honour PWRSCHDLR_SHOW_UPDATED_NOTES to exercise the dialog.
+        var forced = Environment.GetEnvironmentVariable("PWRSCHDLR_SHOW_UPDATED_NOTES") == "1";
+#else
+        const bool forced = false;
+#endif
+        var firstRunOfAVersion = ranBefore && (previous is null
+            || !Version.TryParse(previous, out var parsed)
+            || parsed < current);
+        if (!forced && !firstRunOfAVersion)
+            return false;
+        if (ChangelogStore.ForVersion(current) is not { } notes || notes.IsEmpty)
+            return false;
+
+        await UpdatePrompts.ShowInstalledNotesAsync(Dialogs, current, notes);
+        return true;
     }
 
     /// <summary>
@@ -257,8 +295,9 @@ public sealed partial class MainWindow : Window
 
     private async void OnUpdateNotesClick(object sender, RoutedEventArgs e)
     {
-        if (_availableRelease is { } release)
-            await UpdatePrompts.ShowReleaseNotesAsync(Dialogs, release);
+        if (_availableRelease is { } release
+            && await UpdatePrompts.ShowReleaseNotesAsync(Dialogs, release, UpdateInstallButton.IsEnabled))
+            await DownloadUpdateAsync(release);
     }
 
     private async void OnUpdateInstallClick(object sender, RoutedEventArgs e)
