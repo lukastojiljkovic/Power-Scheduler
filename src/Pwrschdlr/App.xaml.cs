@@ -28,21 +28,29 @@ public partial class App : Application
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        // The scheduled task starts Pwrschdlr for the warning. A task left over from an older timer does nothing.
-        var due = DueTimer(Environment.CommandLine);
+        // The scheduled tasks start Pwrschdlr for a warning. A task left over from an older timer or schedule does
+        // nothing.
+        var due = IdArgument(Environment.CommandLine, "--due");
+        var repeat = IdArgument(Environment.CommandLine, "--repeat");
         if (due is { } id && TimerService.Saved?.Id != id)
         {
             Exit();
             return;
         }
+        if (repeat is { } schedule && RepeatService.Saved?.Id != schedule)
+        {
+            Exit();
+            return;
+        }
 
-        var window = _window = new MainWindow(openedForWarning: due is not null);
+        var window = _window = new MainWindow(openedForWarning: due is not null, openedForRepeat: repeat is not null);
         // A second start, including the task's start while the window is open, brings the window to the front. The
         // window's own countdown shows the warning.
         AppInstance.GetCurrent().Activated += (_, _) => window.DispatcherQueue.TryEnqueue(window.BringToFront);
         window.Activate();
     }
 
-    private static Guid? DueTimer(string commandLine) =>
-        Regex.Match(commandLine, @"--due\s+(?<id>[0-9a-fA-F-]{36})") is { Success: true } match && Guid.TryParse(match.Groups["id"].Value, out var id) ? id : null;
+    /// <summary>The id of a <c>--due</c> or <c>--repeat</c> argument, which one of the tasks put on the command line.</summary>
+    private static Guid? IdArgument(string commandLine, string option) =>
+        Regex.Match(commandLine, $@"{option}\s+(?<id>[0-9a-fA-F-]{{36}})") is { Success: true } match && Guid.TryParse(match.Groups["id"].Value, out var id) ? id : null;
 }

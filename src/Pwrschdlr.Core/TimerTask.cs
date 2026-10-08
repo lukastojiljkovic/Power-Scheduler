@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Security;
 using System.Security.Principal;
 using System.Text;
@@ -22,7 +21,7 @@ public static class TimerTask
         await File.WriteAllTextAsync(xml, Xml(exePath, id, start, user), Encoding.Unicode);
         try
         {
-            return await SchtasksAsync("/Create", "/TN", name, "/XML", xml, "/F");
+            return await Schtasks.RunAsync("/Create", "/TN", name, "/XML", xml, "/F");
         }
         finally
         {
@@ -31,9 +30,9 @@ public static class TimerTask
     }
 
     /// <returns>schtasks.exe's exit code, which isn't 0 when there was no task to delete.</returns>
-    public static Task<int> DeleteAsync(string name) => SchtasksAsync("/Delete", "/TN", name, "/F");
+    public static Task<int> DeleteAsync(string name) => Schtasks.RunAsync("/Delete", "/TN", name, "/F");
 
-    public static async Task<bool> ExistsAsync(string name) => await SchtasksAsync("/Query", "/TN", name) == 0;
+    public static async Task<bool> ExistsAsync(string name) => await Schtasks.RunAsync("/Query", "/TN", name) == 0;
 
     /// <summary>
     /// A one-time trigger in UTC, so changing the time zone doesn't move it. A trigger missed while the PC was off,
@@ -75,22 +74,4 @@ public static class TimerTask
           </Actions>
         </Task>
         """;
-
-    private static async Task<int> SchtasksAsync(params string[] arguments)
-    {
-        var info = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "schtasks.exe"))
-        {
-            CreateNoWindow = true,
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-        };
-        foreach (var argument in arguments)
-            info.ArgumentList.Add(argument);
-
-        using var process = Process.Start(info)!;
-        // Drain both pipes, so a full one can't block schtasks.
-        await Task.WhenAll(process.StandardOutput.ReadToEndAsync(), process.StandardError.ReadToEndAsync(), process.WaitForExitAsync());
-        return process.ExitCode;
-    }
 }

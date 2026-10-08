@@ -10,10 +10,11 @@ public static partial class Program
     [STAThread]
     private static int Main(string[] args)
     {
-        // Run by the uninstaller: removes the timer's task and the settings of the current user.
+        // Run by the uninstaller: removes the tasks and the settings of the current user.
         if (args is ["--uninstall"])
         {
             TimerTask.DeleteAsync(TimerService.TaskName).GetAwaiter().GetResult();
+            RepeatTask.DeleteAsync(RepeatService.TaskName).GetAwaiter().GetResult();
             AppSettings.Clear();
             return 0;
         }

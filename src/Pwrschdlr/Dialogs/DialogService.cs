@@ -91,4 +91,45 @@ internal sealed class DialogService(FrameworkElement root)
                 dialog.Hide();
         }
     }
+
+    /// <summary>
+    /// Closing the window would stop a condition being watched, and nothing of Pwrschdlr would be left to watch it.
+    /// </summary>
+    /// <param name="clause">What is being waited for: "your downloads finish".</param>
+    /// <returns><see langword="true"/> to stop waiting and close.</returns>
+    public async Task<bool> ConfirmStopAsync(string clause)
+    {
+        var dialog = new ContentDialog
+        {
+            Title = "Stop waiting?",
+            Content = new TextBlock
+            {
+                Text = $"Pwrschdlr can only watch for this while it is open. If you close it, nothing will happen when {clause}.",
+                TextWrapping = TextWrapping.Wrap,
+            },
+            PrimaryButtonText = "Keep waiting",
+            SecondaryButtonText = "Stop and close",
+            DefaultButton = ContentDialogButton.Primary,
+        };
+        return await ShowAsync(dialog) == ContentDialogResult.Secondary;
+    }
+
+    /// <summary>Saving a schedule replaces the one there is, so it asks first.</summary>
+    /// <param name="schedule">The saved schedule in words: "shut down on weekdays at 23:30".</param>
+    public async Task<bool> ConfirmReplaceAsync(string schedule)
+    {
+        var dialog = new ContentDialog
+        {
+            Title = "Replace your schedule?",
+            Content = new TextBlock
+            {
+                Text = $"You already have a schedule to {schedule}. Saving this one replaces it.",
+                TextWrapping = TextWrapping.Wrap,
+            },
+            PrimaryButtonText = "Save",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+        };
+        return await ShowAsync(dialog) == ContentDialogResult.Primary;
+    }
 }

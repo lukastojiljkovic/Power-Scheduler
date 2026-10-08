@@ -20,19 +20,28 @@ public sealed partial class MainWindow : Window
     public const string PostponeLabel = "+15 minutes";
 
     private readonly bool _openedForWarning;
+    private readonly bool _openedForRepeat;
     private bool _warning;
     private bool _closing;
+    private bool _startingTimer;
+    private bool _repeatLaunchPending;
+    private (Guid Id, DateTimeOffset Occurrence)? _handledOccurrence;
     private ReleaseInfo? _availableRelease;
     private CancellationTokenSource? _updateDownload;
 
     /// <param name="openedForWarning">Started by the timer's task, rather than by the user.</param>
-    public MainWindow(bool openedForWarning)
+    /// <param name="openedForRepeat">Started by a repeating schedule's task.</param>
+    public MainWindow(bool openedForWarning, bool openedForRepeat)
     {
         _openedForWarning = openedForWarning;
+        _openedForRepeat = openedForRepeat;
+        _repeatLaunchPending = openedForRepeat;
         InitializeComponent();
         Dialogs = new DialogService(Root);
         Timer = new TimerService(DispatcherQueue);
         Timer.Ticked += OnTicked;
+        Conditions = new ConditionService(DispatcherQueue);
+        Repeat = new RepeatService();
         Updates = new UpdateCoordinator();
         Updates.Checked += OnUpdateChecked;
         ConfigureWindow();
@@ -48,9 +57,9 @@ public sealed partial class MainWindow : Window
             var ranBefore = previous is not null || AppSettings.LastUpdateCheckUtc is not null;
             var current = AppVersion.Current;
 
-            // A window the timer's task opened should not start a check or use
+            // A window one of the tasks opened should not start a check or use
             // up the notes of a new version; the user's own window does both.
-            if (_openedForWarning)
+            if (_openedForWarning || _openedForRepeat)
                 return;
             AppSettings.LastRunVersion = current.ToString(3);
             _ = Updates.CheckOnStartupAsync();
@@ -70,6 +79,10 @@ public sealed partial class MainWindow : Window
     internal DialogService Dialogs { get; }
 
     internal TimerService Timer { get; }
+
+    internal ConditionService Conditions { get; }
+
+    internal RepeatService Repeat { get; }
 
     internal UpdateCoordinator Updates { get; }
 
@@ -132,7 +145,11 @@ public sealed partial class MainWindow : Window
     {
         var now = DateTimeOffset.Now;
         RefreshUpdateActions();
-        Title = Timer.Current is { } running ? $"{Timing.Countdown(running.Remaining(now))} · Pwrschdlr" : "Pwrschdlr";
+        Title = Timer.Current is { } running ? $"{Timing.Countdown(running.Remaining(now))} · Pwrschdlr"
+            : Conditions.Status is { } waiting ? $"{waiting.Waiting} · Pwrschdlr"
+            : "Pwrschdlr";
+        CheckRepeat(now);
+        StartConditionTimer();
         if (_warning || Timer.Current is not { } schedule)
             return;
 
@@ -166,7 +183,7 @@ public sealed partial class MainWindow : Window
                     break;
                 case WarningChoice.Postpone:
                     if (!await Timer.PostponeAsync(Postponement))
-                        ShowSchedulerError("Couldn't postpone the timer");
+                        ShowSchedulerError("Couldn't postpone the timer", "the timer");
                     break;
                 case WarningChoice.Missed:
                     await MissedAsync(schedule);
@@ -179,6 +196,75 @@ public sealed partial class MainWindow : Window
         finally
         {
             _warning = false;
+        }
+    }
+
+    /// <summary>
+    /// A repeating schedule's occurrence starts an ordinary timer for it, unless the PC was off, asleep or signed
+    /// out when it came, or a timer or a condition is already running. Each occurrence is dealt with once, so
+    /// cancelling the timer it started doesn't start it again.
+    /// </summary>
+    private void CheckRepeat(DateTimeOffset now)
+    {
+        var launchedForRepeat = _repeatLaunchPending;
+        _repeatLaunchPending = false;
+        if (Repeat.Current is not { } repeat)
+            return;
+
+        var occurrence = repeat.Nearest(now, TimeZoneInfo.Local);
+        if (_handledOccurrence == (repeat.Id, occurrence))
+            return;
+
+        var decision = RepeatLaunch.Decide(occurrence, now, TimerService.Warning, Busy);
+        if (decision == RepeatDecision.NotYet)
+            return;
+
+        _handledOccurrence = (repeat.Id, occurrence);
+        switch (decision)
+        {
+            case RepeatDecision.Start:
+                _ = StartTimerAsync(repeat.Action, occurrence);
+                break;
+            case RepeatDecision.Missed when launchedForRepeat:
+                ShowStatus(
+                    InfoBarSeverity.Warning,
+                    "Missed schedule",
+                    $"Your PC was off, asleep or signed out when your schedule to {Actions.Get(repeat.Action).Name.ToLowerInvariant()} was due {When(occurrence)}, so nothing happened. Your schedule is still saved.");
+                break;
+        }
+    }
+
+    /// <summary>Nothing else takes over while a warning, a timer or a wait is in the way.</summary>
+    private bool Busy => _warning || _startingTimer || Timer.Current is not null || Conditions.Running;
+
+    /// <summary>
+    /// The thing being waited for has happened, so an ordinary timer takes over from there. Its target is now plus
+    /// the warning, which is what opens the warning window straight away.
+    /// </summary>
+    private void StartConditionTimer()
+    {
+        if (Conditions is not { Running: true, Met: true } conditions)
+            return;
+
+        var action = conditions.Action;
+        Conditions.Stop();
+        _ = StartTimerAsync(action, DateTimeOffset.Now + TimerService.Warning);
+    }
+
+    private async Task StartTimerAsync(PowerAction action, DateTimeOffset target)
+    {
+        if (_startingTimer)
+            return;
+
+        _startingTimer = true;
+        try
+        {
+            if (!await Timer.StartAsync(action, target))
+                ShowSchedulerError("Couldn't start the timer", "the timer");
+        }
+        finally
+        {
+            _startingTimer = false;
         }
     }
 
@@ -216,8 +302,8 @@ public sealed partial class MainWindow : Window
             : $"Save your work now. {at} Apps with unsaved work may ask you first.";
     }
 
-    internal void ShowSchedulerError(string title) =>
-        ShowStatus(InfoBarSeverity.Error, title, "Windows Task Scheduler didn't accept the timer. Try again, and restart your PC if it keeps happening.");
+    internal void ShowSchedulerError(string title, string what) =>
+        ShowStatus(InfoBarSeverity.Error, title, $"Windows Task Scheduler didn't accept {what}. Try again, and restart your PC if it keeps happening.");
 
     private void OnNavigationSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
@@ -228,15 +314,34 @@ public sealed partial class MainWindow : Window
 
     private void OnPaneToggleRequested(TitleBar sender, object args) => NavView.IsPaneOpen = !NavView.IsPaneOpen;
 
-    /// <summary>Closing the window during the warning cancels the timer. At any other time, the timer keeps running.</summary>
+    /// <summary>
+    /// Closing the window during the warning cancels the timer. Closing it while a condition is being watched stops
+    /// the wait, since Pwrschdlr only watches while it is open, so it asks first. At any other time the timer keeps
+    /// running and the window just closes.
+    /// </summary>
     private async void OnWindowClosing(AppWindow sender, AppWindowClosingEventArgs args)
     {
-        if (!_warning || _closing)
+        if (_closing)
+            return;
+
+        if (_warning)
+        {
+            args.Cancel = true;
+            _closing = true;
+            await Timer.CancelAsync();
+            Close();
+            return;
+        }
+
+        if (!Conditions.Running)
             return;
 
         args.Cancel = true;
+        if (!await Dialogs.ConfirmStopAsync(Conditions.Clause))
+            return;
+
         _closing = true;
-        await Timer.CancelAsync();
+        Conditions.Stop();
         Close();
     }
 
@@ -285,11 +390,11 @@ public sealed partial class MainWindow : Window
     }
 
     /// <summary>
-    /// An update closes Pwrschdlr, so it cannot start while a timer is armed:
-    /// the countdown the user is relying on would disappear with the window.
+    /// An update closes Pwrschdlr, so it cannot start while a timer is armed or a condition is being watched:
+    /// the countdown or the watch the user is relying on would disappear with the window.
     /// </summary>
     private void RefreshUpdateActions() =>
-        UpdateInstallButton.IsEnabled = Timer.Current is null && _updateDownload is null;
+        UpdateInstallButton.IsEnabled = Timer.Current is null && !Conditions.Running && _updateDownload is null;
 
     private void OnUpdateBarClosed(InfoBar sender, object args) => _availableRelease = null;
 
@@ -313,6 +418,11 @@ public sealed partial class MainWindow : Window
     /// </summary>
     private async Task DownloadUpdateAsync(ReleaseInfo release)
     {
+        if (Conditions.Running)
+        {
+            ShowStatus(InfoBarSeverity.Warning, "Pwrschdlr is waiting", "Stop waiting before updating Pwrschdlr.");
+            return;
+        }
         if (Timer.Current is not null)
         {
             ShowStatus(InfoBarSeverity.Warning, "A timer is running", "Cancel the timer before updating Pwrschdlr.");

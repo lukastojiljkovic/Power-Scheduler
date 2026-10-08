@@ -53,13 +53,14 @@ public static class Timing
     public static string Clock(DateTimeOffset time, TimeZoneInfo zone, CultureInfo culture) =>
         TimeZoneInfo.ConvertTime(time, zone).ToString("t", culture);
 
-    private static DateOnly LocalDate(DateTimeOffset time, TimeZoneInfo zone) => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(time, zone).DateTime);
+    /// <summary>The day <paramref name="time"/> falls on, on the wall clock of <paramref name="zone"/>.</summary>
+    public static DateOnly LocalDate(DateTimeOffset time, TimeZoneInfo zone) => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(time, zone).DateTime);
 
     /// <summary>
     /// The instant a wall-clock time stands for. A time that a daylight saving change skips moves on by the gap, as a
     /// clock that wasn't changed would show it. A time that the change repeats is its first occurrence.
     /// </summary>
-    private static DateTimeOffset Resolve(DateTime wall, TimeZoneInfo zone)
+    public static DateTimeOffset Resolve(DateTime wall, TimeZoneInfo zone)
     {
         if (zone.IsAmbiguousTime(wall))
             return new DateTimeOffset(wall, zone.GetAmbiguousTimeOffsets(wall).Max());
