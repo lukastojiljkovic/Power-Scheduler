@@ -26,6 +26,20 @@ public sealed record Repeat(Guid Id, PowerAction Action, TimeOnly Time, IReadOnl
         new(Guid.NewGuid(), action, time, days.ToHashSet());
 
     /// <summary>
+    /// The days a scheduled task must run on to open the warning before every occurrence. The task runs at the
+    /// warning's time of day, so an occurrence earlier than the warning starts it the day before: those days move
+    /// back one, Sunday wrapping to Saturday. A warning is minutes long, never a day or more, so one day is enough.
+    /// </summary>
+    public IReadOnlySet<DayOfWeek> TriggerDays(TimeSpan warning)
+    {
+        if (warning < TimeSpan.Zero || warning >= TimeSpan.FromDays(1))
+            throw new ArgumentOutOfRangeException(nameof(warning), warning, "A warning is at least zero and shorter than a day.");
+        if (Time >= TimeOnly.FromTimeSpan(warning))
+            return Days;
+        return Days.Select(day => day == DayOfWeek.Sunday ? DayOfWeek.Saturday : (DayOfWeek)((int)day - 1)).ToHashSet();
+    }
+
+    /// <summary>
     /// The first occurrence strictly after <paramref name="now"/>. A time daylight saving skips moves on by the
     /// skipped hour, and a time it happens twice is the first one, exactly as <see cref="Timing"/> does for a timer.
     /// </summary>

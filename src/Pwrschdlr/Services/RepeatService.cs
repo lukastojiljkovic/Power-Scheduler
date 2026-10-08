@@ -25,8 +25,9 @@ internal sealed class RepeatService
     /// <returns><see langword="false"/> if Task Scheduler didn't accept the schedule.</returns>
     public async Task<bool> SaveAsync(Repeat repeat)
     {
-        var first = repeat.NextOccurrence(DateTimeOffset.Now, TimeZoneInfo.Local) - TimerService.Warning;
-        if (await RepeatTask.RegisterAsync(TaskName, Environment.ProcessPath!, repeat.Id, first, repeat.Days, WindowsIdentity.GetCurrent().User!) != 0)
+        var warning = TimerService.Warning;
+        var first = repeat.NextOccurrence(DateTimeOffset.Now, TimeZoneInfo.Local) - warning;
+        if (await RepeatTask.RegisterAsync(TaskName, Environment.ProcessPath!, repeat, first, warning, WindowsIdentity.GetCurrent().User!) != 0)
             return false;
 
         Store.Save(repeat);

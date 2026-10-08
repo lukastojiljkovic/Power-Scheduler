@@ -22,4 +22,19 @@ public class RepeatLaunchTests
     [Fact]
     public void An_occurrence_is_skipped_while_a_timer_or_a_condition_runs() =>
         Assert.Equal(RepeatDecision.SkipBusy, RepeatLaunch.Decide(Occurrence, Occurrence.AddSeconds(-30), Warning, somethingRunning: true));
+
+    [Fact]
+    public void A_schedule_just_after_midnight_starts_when_its_task_fires_the_day_before()
+    {
+        var zone = TimeZoneInfo.FindSystemTimeZoneById("Central Europe Standard Time");
+        var warning = TimeSpan.FromMinutes(10);
+        var repeat = Repeat.Create(PowerAction.ShutDown, new TimeOnly(0, 5), [DayOfWeek.Monday]);
+        // The task fires Sunday 23:55, ten minutes before the Monday 00:05 occurrence.
+        var now = new DateTimeOffset(2026, 10, 4, 23, 55, 0, TimeSpan.FromHours(2));
+
+        var occurrence = repeat.Nearest(now, zone);
+
+        Assert.Equal(new DateTimeOffset(2026, 10, 5, 0, 5, 0, TimeSpan.FromHours(2)), occurrence);
+        Assert.Equal(RepeatDecision.Start, RepeatLaunch.Decide(occurrence, now, warning, somethingRunning: false));
+    }
 }

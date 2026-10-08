@@ -14,12 +14,14 @@ public static class RepeatTask
     public static string NameFor(SecurityIdentifier user) => $"Pwrschdlr repeat-{user}";
 
     /// <summary>Creates the task, or replaces the one there is.</summary>
+    /// <param name="repeat">The schedule whose occurrence the task opens the window for.</param>
     /// <param name="start">The first time the task should run: the next occurrence, less the warning.</param>
+    /// <param name="warning">How long before an occurrence the warning starts; the task runs at this time of day.</param>
     /// <returns>schtasks.exe's exit code: 0 when Task Scheduler accepted the task.</returns>
-    public static async Task<int> RegisterAsync(string name, string exePath, Guid id, DateTimeOffset start, IReadOnlySet<DayOfWeek> days, SecurityIdentifier user)
+    public static async Task<int> RegisterAsync(string name, string exePath, Repeat repeat, DateTimeOffset start, TimeSpan warning, SecurityIdentifier user)
     {
         var xml = Path.Combine(Path.GetTempPath(), $"pwrschdlr-{Guid.NewGuid():N}.xml");
-        await File.WriteAllTextAsync(xml, Xml(exePath, id, start, days, user), Encoding.Unicode);
+        await File.WriteAllTextAsync(xml, Xml(exePath, repeat, start, warning, user), Encoding.Unicode);
         try
         {
             return await Schtasks.RunAsync("/Create", "/TN", name, "/XML", xml, "/F");
@@ -38,9 +40,12 @@ public static class RepeatTask
     /// <summary>
     /// A weekly trigger at the local time of day, so the schedule keeps its time when the clocks change. A trigger
     /// missed while the PC was off, asleep or signed out doesn't run later, so a skipped occurrence stays skipped.
+    /// The trigger runs on the warning's days, not the schedule's, since it fires the warning early: a schedule just
+    /// after midnight starts the task the day before, exactly where <paramref name="start"/> already falls.
     /// </summary>
-    internal static string Xml(string exePath, Guid id, DateTimeOffset start, IReadOnlySet<DayOfWeek> days, SecurityIdentifier user)
+    internal static string Xml(string exePath, Repeat repeat, DateTimeOffset start, TimeSpan warning, SecurityIdentifier user)
     {
+        var days = repeat.TriggerDays(warning);
         var week = string.Join("\n", Enum.GetValues<DayOfWeek>().Where(days.Contains).OrderBy(day => (int)day).Select(day => $"          <{day} />"));
         return $"""
         <?xml version="1.0" encoding="UTF-16"?>
@@ -79,7 +84,7 @@ public static class RepeatTask
           <Actions Context="Author">
             <Exec>
               <Command>{SecurityElement.Escape(exePath)}</Command>
-              <Arguments>--repeat {id:D}</Arguments>
+              <Arguments>--repeat {repeat.Id:D}</Arguments>
             </Exec>
           </Actions>
         </Task>

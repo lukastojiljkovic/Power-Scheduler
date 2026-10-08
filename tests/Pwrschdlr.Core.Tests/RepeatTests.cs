@@ -56,6 +56,26 @@ public class RepeatTests
     }
 
     [Fact]
+    public void The_trigger_days_stay_when_the_occurrence_is_later_than_the_warning() =>
+        Assert.Equal([DayOfWeek.Monday, DayOfWeek.Thursday], On(new TimeOnly(23, 30), DayOfWeek.Monday, DayOfWeek.Thursday).TriggerDays(TimeSpan.FromMinutes(10)).Order());
+
+    [Fact]
+    public void The_trigger_days_move_back_when_the_occurrence_is_earlier_than_the_warning() =>
+        Assert.Equal([DayOfWeek.Sunday], On(new TimeOnly(0, 5), DayOfWeek.Monday).TriggerDays(TimeSpan.FromMinutes(10)).Order());
+
+    [Fact]
+    public void A_trigger_day_on_sunday_becomes_saturday() =>
+        Assert.Equal([DayOfWeek.Sunday, DayOfWeek.Saturday], On(new TimeOnly(0, 5), DayOfWeek.Sunday, DayOfWeek.Monday).TriggerDays(TimeSpan.FromMinutes(10)).Order());
+
+    [Fact]
+    public void Every_day_stays_every_day_when_the_trigger_moves_back() =>
+        Assert.Equal(Enum.GetValues<DayOfWeek>().Order(), Daily(new TimeOnly(0, 0)).TriggerDays(TimeSpan.FromMinutes(10)).Order());
+
+    [Fact]
+    public void A_time_exactly_at_the_warning_doesnt_move() =>
+        Assert.Equal([DayOfWeek.Monday], On(new TimeOnly(0, 10), DayOfWeek.Monday).TriggerDays(TimeSpan.FromMinutes(10)).Order());
+
+    [Fact]
     public void The_days_read_as_words()
     {
         Assert.Equal("every day", On(new TimeOnly(23, 30), Enum.GetValues<DayOfWeek>()).DaysInWords(English));
