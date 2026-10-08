@@ -5,11 +5,13 @@
 Key facts:
 
 - One timer, set for a delay (presets from 15 minutes to 4 hours) or a time of day, up to 23 hours 59 minutes away. Daylight saving time is handled.
+- When something ends, Pwrschdlr waits for downloads to finish, for an app to close, or for nobody to use the PC, and then runs the timer with its usual warning and cancel. It watches only while its window is open.
+- Repeat saves a time and the days of the week, such as shut down on weekdays at 23:30. A per-user scheduled task opens Pwrschdlr for the warning before each occurrence, so it works with the window closed; an occurrence that came while the PC was off, asleep or signed out is reported as missed, never run late.
 - The timer keeps running when the app is closed: a per-user scheduled task opens Pwrschdlr 30 seconds, 1, 2 or 5 minutes before the end, and the warning stays on top.
 - A timer that ran out while the PC was off, asleep or signed out is reported, never run late.
 - Requires Windows 11, or Windows 10 version 1809 or later, x64. Tested on Windows 11. English UI.
-- Installs for the current user without administrator rights. Collects no data; its only network request is a daily update check against GitHub, which can be turned off.
-- Verified by 55 unit tests, UI Automation on Windows 11 and a silent install and uninstall in CI.
+- Installs for the current user without administrator rights. Collects no data; its only network request is a daily update check against GitHub, which can be turned off. Its update notices show what changed, grouped New, Improved and Fixed, and it shows what changed after an update.
+- Verified by 164 unit tests, UI Automation on Windows 11 and a silent install and uninstall in CI.
 
 ## Download
 

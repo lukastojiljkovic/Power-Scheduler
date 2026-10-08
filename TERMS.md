@@ -1,6 +1,6 @@
 # Pwrschdlr Terms of Use
 
-Last updated: 5 October 2026
+Last updated: 8 October 2026
 
 These terms apply to the Pwrschdlr application and installer published at
 https://github.com/lukastojiljkovic/Power-Scheduler. Pwrschdlr's source code is licensed under the MIT License
@@ -13,7 +13,10 @@ By installing or using Pwrschdlr, you agree to these terms. If you don't agree, 
 Pwrschdlr runs a timer that shuts down, restarts, puts to sleep, hibernates or signs out of your PC when it runs out.
 To keep the timer running while Pwrschdlr is closed, it adds a scheduled task to Windows Task Scheduler, which opens
 Pwrschdlr again shortly before the end. Pwrschdlr then shows a warning that counts down, and does what the timer was
-set to do unless you cancel or postpone it.
+set to do unless you cancel or postpone it. You can also set the timer to start when something ends: your downloads
+finish, an app closes, or nobody uses the PC. Pwrschdlr watches for that only while its window is open. Or you can
+repeat the same action on the days of the week you choose, which uses a scheduled task that opens Pwrschdlr before
+each occurrence.
 
 ## 2. Your responsibility
 
@@ -31,6 +34,8 @@ set to do unless you cancel or postpone it.
   unsaved work, a running update or a setting that turns off sleep or hibernation.
 - The timer only runs while you're signed in to Windows. If your PC is off, asleep or signed out when the timer runs
   out, nothing happens, and Pwrschdlr tells you the next time it opens.
+- Waiting for something to end works only while Pwrschdlr's window is open, and a repeat that came while your PC was
+  off, asleep or signed out is reported as missed, never run late.
 - Don't rely on Pwrschdlr where a missed or early action could cause harm or loss.
 
 ## 4. No warranty
