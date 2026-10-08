@@ -25,7 +25,7 @@ public sealed partial class SettingsView : UserControl
         AboutCard.Description = $"Version {App.Version} · MIT License · © 2026 Luka Stojiljkovic";
     }
 
-    /// <summary>A running timer's task moves with the warning.</summary>
+    /// <summary>A running timer's task, and a repeating schedule's, move with the warning.</summary>
     private async void OnWarningChanged(object sender, SelectionChangedEventArgs e)
     {
         var seconds = AppSettings.Warnings[WarningBox.SelectedIndex].Seconds;
@@ -34,12 +34,14 @@ public sealed partial class SettingsView : UserControl
 
         var previous = AppSettings.WarningSeconds;
         AppSettings.WarningSeconds = seconds;
-        if (await _window.Timer.RescheduleAsync())
+        if (await _window.Timer.RescheduleAsync() & await _window.Repeat.RescheduleAsync())
             return;
 
         AppSettings.WarningSeconds = previous;
         WarningBox.SelectedIndex = Array.FindIndex(AppSettings.Warnings, warning => warning.Seconds == previous);
-        _window.ShowSchedulerError("Couldn't change the warning");
+        await _window.Timer.RescheduleAsync();
+        await _window.Repeat.RescheduleAsync();
+        _window.ShowSchedulerError("Couldn't change the warning", "the timer");
     }
 
     private void OnCloseAppsToggled(object sender, RoutedEventArgs e) => AppSettings.CloseApps = CloseAppsToggle.IsOn;

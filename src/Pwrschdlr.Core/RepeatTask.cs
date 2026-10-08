@@ -5,20 +5,21 @@ using System.Text;
 namespace Pwrschdlr.Core;
 
 /// <summary>
-/// The per-user scheduled task that starts <c>Pwrschdlr.exe --due &lt;id&gt;</c> when the warning before a timer runs out
-/// should appear. It lets the timer outlive the window: Pwrschdlr can be closed, and it comes back to count down.
+/// The per-user scheduled task that starts <c>Pwrschdlr.exe --repeat &lt;id&gt;</c> shortly before a repeating
+/// schedule's occurrence, so the warning appears whether or not the window is open.
 /// </summary>
-public static class TimerTask
+public static class RepeatTask
 {
     /// <summary>Every user on a PC shares the task namespace, so each user's task carries their SID.</summary>
-    public static string NameFor(SecurityIdentifier user) => $"Pwrschdlr timer-{user}";
+    public static string NameFor(SecurityIdentifier user) => $"Pwrschdlr repeat-{user}";
 
     /// <summary>Creates the task, or replaces the one there is.</summary>
+    /// <param name="start">The first time the task should run: the next occurrence, less the warning.</param>
     /// <returns>schtasks.exe's exit code: 0 when Task Scheduler accepted the task.</returns>
-    public static async Task<int> RegisterAsync(string name, string exePath, Guid id, DateTimeOffset start, SecurityIdentifier user)
+    public static async Task<int> RegisterAsync(string name, string exePath, Guid id, DateTimeOffset start, IReadOnlySet<DayOfWeek> days, SecurityIdentifier user)
     {
         var xml = Path.Combine(Path.GetTempPath(), $"pwrschdlr-{Guid.NewGuid():N}.xml");
-        await File.WriteAllTextAsync(xml, Xml(exePath, id, start, user), Encoding.Unicode);
+        await File.WriteAllTextAsync(xml, Xml(exePath, id, start, days, user), Encoding.Unicode);
         try
         {
             return await Schtasks.RunAsync("/Create", "/TN", name, "/XML", xml, "/F");
@@ -35,21 +36,30 @@ public static class TimerTask
     public static async Task<bool> ExistsAsync(string name) => await Schtasks.RunAsync("/Query", "/TN", name) == 0;
 
     /// <summary>
-    /// A one-time trigger in UTC, so changing the time zone doesn't move it. A trigger missed while the PC was off,
-    /// asleep or signed out doesn't run later: nobody wants their PC to shut down right after they turn it on. The
-    /// instance runs at normal priority without a time limit, because it is the window counting down.
+    /// A weekly trigger at the local time of day, so the schedule keeps its time when the clocks change. A trigger
+    /// missed while the PC was off, asleep or signed out doesn't run later, so a skipped occurrence stays skipped.
     /// </summary>
-    internal static string Xml(string exePath, Guid id, DateTimeOffset start, SecurityIdentifier user) => $"""
+    internal static string Xml(string exePath, Guid id, DateTimeOffset start, IReadOnlySet<DayOfWeek> days, SecurityIdentifier user)
+    {
+        var week = string.Join("\n", Enum.GetValues<DayOfWeek>().Where(days.Contains).OrderBy(day => (int)day).Select(day => $"          <{day} />"));
+        return $"""
         <?xml version="1.0" encoding="UTF-16"?>
         <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
           <RegistrationInfo>
             <Author>Pwrschdlr</Author>
-            <Description>Opens Pwrschdlr shortly before the timer you set runs out, so you can still cancel it. Cancelling the timer removes this task.</Description>
+            <Description>Opens Pwrschdlr shortly before your repeating schedule runs, so you can still cancel it. Removing the schedule removes this task.</Description>
           </RegistrationInfo>
           <Triggers>
-            <TimeTrigger>
-              <StartBoundary>{start.UtcDateTime:yyyy-MM-ddTHH:mm:ss}Z</StartBoundary>
-            </TimeTrigger>
+            <CalendarTrigger>
+              <StartBoundary>{start.DateTime:yyyy-MM-ddTHH:mm:ss}</StartBoundary>
+              <Enabled>true</Enabled>
+              <ScheduleByWeek>
+                <DaysOfWeek>
+        {week}
+                </DaysOfWeek>
+                <WeeksInterval>1</WeeksInterval>
+              </ScheduleByWeek>
+            </CalendarTrigger>
           </Triggers>
           <Principals>
             <Principal id="Author">
@@ -69,9 +79,10 @@ public static class TimerTask
           <Actions Context="Author">
             <Exec>
               <Command>{SecurityElement.Escape(exePath)}</Command>
-              <Arguments>--due {id:D}</Arguments>
+              <Arguments>--repeat {id:D}</Arguments>
             </Exec>
           </Actions>
         </Task>
         """;
+    }
 }
